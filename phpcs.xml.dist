@@ -86,7 +86,11 @@
 		<exclude-pattern>/*.php</exclude-pattern>
 	</rule>
 
-	<!-- Préfixe des fonctions, constantes et options du thème. -->
+	<!-- Préfixe des fonctions, constantes et options du thème : « vsg » (Villeneuve-Saint-Georges), trois lettres,
+	     unique dans ce site qui n'a aucune extension. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed">
+		<severity>0</severity>
+	</rule>
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">

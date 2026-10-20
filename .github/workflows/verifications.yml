@@ -28,10 +28,11 @@ jobs:
           grep -Eq '^Version: [0-9]+\.[0-9]+\.[0-9]+$' style.css
 
       # Règles de codage WordPress (phpcs.xml.dist) : sécurité, nommage, mise en forme. Zéro écart exigé.
+      # Version des règles figée (3.1.0) : la même que celle utilisée pour mettre le code au propre.
       - name: Règles de codage WordPress (PHPCS)
         run: |
           composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require --quiet wp-coding-standards/wpcs:^3.1 dealerdirect/phpcodesniffer-composer-installer
+          composer global require --quiet wp-coding-standards/wpcs:3.1.0 dealerdirect/phpcodesniffer-composer-installer
           PHPCS="$(composer global config home)/vendor/bin/phpcs"
           "$PHPCS" -i
           # -q : sans la note de dépréciation de PHPCS, qui casserait le format checkstyle lu par cs2pr.
