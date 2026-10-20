@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" font-family="'Source Sans 3', 'Segoe UI', Arial, sans-serif">
+<defs>
+<style>
+.t{fill:#1F3A5F}.g{fill:#8C6516}.w{fill:#fff}.m{fill:#4A5363}
+.h1{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:46px}
+.h2{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:28px}
+.h3{font-weight:700;font-size:22px;letter-spacing:.04em}
+.p{font-size:19px}
+</style>
+</defs>
+<rect width="1600" height="1000" fill="#FBF6EA"/>
+<rect x="0" y="0" width="1600" height="150" fill="#1F3A5F"/>
+<rect x="0" y="150" width="1600" height="6" fill="#8C6516"/>
+<text x="800" y="92" text-anchor="middle" class="h1 w">À quoi servent mes dons ?</text>
+<text x="800" y="128" text-anchor="middle" class="p" fill="#DCE3EC">Les paroisses ne reçoivent aucune subvention : elles vivent uniquement de la générosité des fidèles.</text>
+
+<!-- colonnes -->
+<g id="col1" transform="translate(60,200)">
+ <rect width="460" height="740" rx="18" fill="#fff" stroke="#EADFC2"/>
+ <rect x="0" y="0" width="460" height="10" rx="5" fill="#1F3A5F"/>
+ <!-- icône : silhouette prêtre stylisée -->
+ <circle cx="230" cy="95" r="46" fill="#1F3A5F"/>
+ <path d="M160 190 C160 150 300 150 300 190 L300 205 L160 205 Z" fill="#1F3A5F"/>
+ <rect x="222" y="128" width="16" height="40" fill="#8C6516"/><rect x="210" y="140" width="40" height="14" fill="#8C6516"/>
+ <text x="230" y="260" text-anchor="middle" class="h2 t">Les personnes</text>
+ <text x="230" y="292" text-anchor="middle" class="p m">Traitement des prêtres et salaires</text>
+ <text x="230" y="318" text-anchor="middle" class="p m">des laïcs au service du diocèse.</text>
+ <rect x="30" y="350" width="400" height="170" rx="12" fill="#1F3A5F"/>
+ <text x="230" y="400" text-anchor="middle" class="h3 w">LE DENIER DE L'ÉGLISE</text>
+ <text x="230" y="440" text-anchor="middle" class="p w">Don annuel qui soutient la mission</text>
+ <text x="230" y="468" text-anchor="middle" class="p w">de l'Église diocésaine.</text>
+ <rect x="30" y="540" width="400" height="170" rx="12" fill="#1F3A5F"/>
+ <text x="230" y="590" text-anchor="middle" class="h3 w">LES OFFRANDES DE MESSES</text>
+ <text x="230" y="630" text-anchor="middle" class="p w">Pour faire célébrer une messe</text>
+ <text x="230" y="658" text-anchor="middle" class="p w">à une intention particulière.</text>
+</g>
+
+<g id="col2" transform="translate(570,200)">
+ <rect width="460" height="740" rx="18" fill="#fff" stroke="#EADFC2"/>
+ <rect x="0" y="0" width="460" height="10" rx="5" fill="#8C6516"/>
+ <!-- icône : église stylisée -->
+ <path d="M150 200 L150 120 L230 60 L310 120 L310 200 Z" fill="#8C6516"/>
+ <rect x="226" y="20" width="8" height="40" fill="#1F3A5F"/><rect x="214" y="30" width="32" height="8" fill="#1F3A5F"/>
+ <rect x="214" y="150" width="32" height="50" rx="16" fill="#FBF6EA"/>
+ <text x="230" y="260" text-anchor="middle" class="h2 t">Le fonctionnement</text>
+ <text x="230" y="292" text-anchor="middle" class="p m">Chauffage, électricité, entretien,</text>
+ <text x="230" y="318" text-anchor="middle" class="p m">fleurs, mobilier, catéchèse…</text>
+ <rect x="30" y="350" width="400" height="170" rx="12" fill="#8C6516"/>
+ <text x="230" y="400" text-anchor="middle" class="h3 w">LA QUÊTE</text>
+ <text x="230" y="440" text-anchor="middle" class="p w">Pendant la messe, ou en ligne,</text>
+ <text x="230" y="468" text-anchor="middle" class="p w">pour la vie quotidienne de la paroisse.</text>
+ <rect x="30" y="540" width="400" height="170" rx="12" fill="#8C6516"/>
+ <text x="230" y="590" text-anchor="middle" class="h3 w">LE CASUEL</text>
+ <text x="230" y="630" text-anchor="middle" class="p w">Offrande à l'occasion d'un baptême,</text>
+ <text x="230" y="658" text-anchor="middle" class="p w">d'un mariage ou de funérailles.</text>
+</g>
+
+<g id="col3" transform="translate(1080,200)">
+ <rect width="460" height="740" rx="18" fill="#fff" stroke="#EADFC2"/>
+ <rect x="0" y="0" width="460" height="10" rx="5" fill="#2E4A6E"/>
+ <!-- icône : truelle / chantier stylisé -->
+ <rect x="150" y="150" width="160" height="50" rx="6" fill="#2E4A6E"/>
+ <rect x="170" y="110" width="120" height="40" rx="6" fill="#2E4A6E"/>
+ <rect x="190" y="70" width="80" height="40" rx="6" fill="#2E4A6E"/>
+ <rect x="226" y="30" width="8" height="40" fill="#8C6516"/><rect x="214" y="40" width="32" height="8" fill="#8C6516"/>
+ <text x="230" y="260" text-anchor="middle" class="h2 t">Les projets</text>
+ <text x="230" y="292" text-anchor="middle" class="p m">Travaux, rénovation des églises</text>
+ <text x="230" y="318" text-anchor="middle" class="p m">et des chapelles, grands projets.</text>
+ <rect x="30" y="350" width="400" height="170" rx="12" fill="#2E4A6E"/>
+ <text x="230" y="400" text-anchor="middle" class="h3 w">LES DONS SPÉCIFIQUES</text>
+ <text x="230" y="440" text-anchor="middle" class="p w">Don ponctuel pour un chantier,</text>
+ <text x="230" y="468" text-anchor="middle" class="p w">un projet ou une souscription.</text>
+ <rect x="30" y="540" width="400" height="170" rx="12" fill="#2E4A6E"/>
+ <text x="230" y="590" text-anchor="middle" class="h3 w">LES LEGS ET DONATIONS</text>
+ <text x="230" y="630" text-anchor="middle" class="p w">Bien immobilier, somme d'argent,</text>
+ <text x="230" y="658" text-anchor="middle" class="p w">assurance-vie, gérés par le diocèse.</text>
+</g>
+<text x="1540" y="975" text-anchor="end" font-size="16" fill="#4A5363">Ensemble paroissial Notre-Dame de Lourdes – Sainte-Geneviève · Diocèse de Créteil</text>
+</svg>

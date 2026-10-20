@@ -1,0 +1,8 @@
+/* Aperçu dans l'éditeur, proche du site. */
+@font-face { font-family: "Source Sans 3"; font-weight: 400; src: url("fonts/source-sans-3-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Source Sans 3"; font-weight: 700; src: url("fonts/source-sans-3-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Source Serif 4"; font-weight: 700; src: url("fonts/source-serif-4-latin-700-normal.woff2") format("woff2"); }
+body { font-family: "Source Sans 3", system-ui, sans-serif; font-size: 18px; line-height: 1.65; color: #1E2430; }
+h1, h2, h3, .editor-post-title__input { font-family: "Source Serif 4", Georgia, serif; color: #1F3A5F; }
+a { color: #1F3A5F; }
+.wp-block-button__link { background: #1F3A5F; color: #fff; border-radius: 8px; }

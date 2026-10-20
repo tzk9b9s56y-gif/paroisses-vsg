@@ -1,0 +1,6 @@
+# Aucun fichier PHP du thème ne doit être appelé directement : WordPress les charge lui-même.
+<IfModule mod_authz_core.c>
+<FilesMatch "\.php$">
+Require all denied
+</FilesMatch>
+</IfModule>
