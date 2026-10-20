@@ -14,7 +14,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          tools: composer, cs2pr
+          tools: cs2pr
 
       # Une erreur de syntaxe casserait le site.
       - name: Syntaxe PHP
@@ -28,12 +28,15 @@ jobs:
           grep -Eq '^Version: [0-9]+\.[0-9]+\.[0-9]+$' style.css
 
       # Règles de codage WordPress (phpcs.xml.dist) : sécurité, nommage, mise en forme. Zéro écart exigé.
-      # Version des règles figée (3.1.0) : la même que celle utilisée pour mettre le code au propre.
+      # Outils figés aux versions utilisées pour mettre le code au propre, pris directement sur GitHub.
       - name: Règles de codage WordPress (PHPCS)
         run: |
-          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require --quiet wp-coding-standards/wpcs:3.1.0 dealerdirect/phpcodesniffer-composer-installer
-          PHPCS="$(composer global config home)/vendor/bin/phpcs"
-          "$PHPCS" -i
+          mkdir -p "$RUNNER_TEMP/phpcs" && cd "$RUNNER_TEMP/phpcs"
+          git clone -q --depth 1 --branch 3.13.2 https://github.com/PHPCSStandards/PHP_CodeSniffer.git phpcs
+          git clone -q --depth 1 --branch 3.1.0  https://github.com/WordPress/WordPress-Coding-Standards.git wpcs
+          git clone -q --depth 1 --branch 1.0.12 https://github.com/PHPCSStandards/PHPCSUtils.git utils
+          git clone -q --depth 1 --branch 1.2.1  https://github.com/PHPCSStandards/PHPCSExtra.git extra
+          php phpcs/bin/phpcs --config-set installed_paths "$PWD/wpcs,$PWD/utils,$PWD/extra" > /dev/null
+          cd "$GITHUB_WORKSPACE"
           # -q : sans la note de dépréciation de PHPCS, qui casserait le format checkstyle lu par cs2pr.
-          "$PHPCS" -q --report=checkstyle | cs2pr
+          php "$RUNNER_TEMP/phpcs/phpcs/bin/phpcs" -q --report=checkstyle | cs2pr
