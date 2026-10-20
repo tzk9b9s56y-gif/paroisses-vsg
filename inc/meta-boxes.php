@@ -3,9 +3,7 @@
  * Champs simples pour la secrétaire : date des rendez-vous, coordonnées des lieux.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 add_action(
 	'add_meta_boxes',
@@ -56,7 +54,7 @@ function vsg_box_event( $post ) {
 	vsg_field( $post->ID, 'lieu', 'Lieu précis (facultatif)', 'text', 'Ex. : grande salle, petite salle, cuisine…' );
 	$cur = vsg_meta( $post->ID, 'type' );
 	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Type de rendez-vous</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>';
-	echo vsg_event_type_options( $cur ); // phpcs:ignore
+	echo vsg_event_type_options( $cur );
 	echo '</select><span class="vsg-hint">Un groupe ou une communauté : le rendez-vous s\'affiche aussi sur sa page.</span></p>';
 	echo '<p class="vsg-help vsg-m0">Cochez la paroisse ou la chapelle dans « Paroisses et lieux ». Pour un rendez-vous interne (réservation de salle, réunion d\'équipe), mettez la visibilité sur « Privé » : seules les personnes connectées le verront.</p>';
 }
@@ -76,7 +74,8 @@ function vsg_box_place( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
 	$is_parish = VSG_TPL_PAROISSE === get_page_template_slug( $post );
 	if ( $is_parish ) {
-		$col = vsg_meta( $post->ID, 'couleur' ) ?: vsg_parish_color( $post );
+		$col = vsg_meta( $post->ID, 'couleur' );
+		$col = $col ? $col : vsg_parish_color( $post );
 		echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_couleur">Couleur de la paroisse</label><input class="vsg-color" type="color" id="vsg_couleur" name="vsg_couleur" value="' . esc_attr( $col ) . '"> <span class="vsg-help">Sert à repérer la paroisse sur le site (bandeau, pastilles).</span></p>';
 		vsg_field( $post->ID, 'eglise', 'Adresse de l\'église', 'text' );
 		vsg_field( $post->ID, 'adresse', 'Adresse de l\'accueil paroissial', 'text' );
@@ -143,7 +142,7 @@ function vsg_box_community( $post ) {
 	vsg_field( $post->ID, 'instagram', 'Compte Instagram', 'url' );
 	vsg_field( $post->ID, 'youtube', 'Chaîne YouTube', 'url' );
 	$cur = vsg_meta( $post->ID, 'type' );
-	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Rendez-vous affichés sur cette page</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>' . vsg_event_type_options( $cur ); // phpcs:ignore
+	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Rendez-vous affichés sur cette page</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>' . vsg_event_type_options( $cur );
 	echo '</select><span class="vsg-hint">Les rendez-vous de ce type s\'affichent dans le programme de la page. Une communauté ou un groupe de prière : son programme est importé à part et n\'apparaît pas dans l\'agenda du site.</span></p>';
 	vsg_cat_field( $post->ID, 'Les actualités classées dans cette catégorie s\'affichent sur la page de la communauté.' );
 }
@@ -161,37 +160,37 @@ add_action(
 			return;
 		}
 		$fields = array(
-			'date'        => 'date',
-			'heure'       => 'time',
-			'lieu'        => 'text',
-			'eglise'      => 'text',
-			'adresse'     => 'text',
-			'permanences' => 'textarea',
-			'telephone'   => 'text',
-			'email'       => 'email',
-			'acces'       => 'textarea',
-			'cat'         => 'slug',
-			'couleur'     => 'color',
-			'cure_nom'    => 'text',
-			'cure_mot'    => 'textarea',
-			'cure_photo'  => 'url',
-			'cure_tel'    => 'text',
-			'theme_titre' => 'text',
-			'theme_image' => 'url',
-			'theme_lien'  => 'url',
-			'cure_email'  => 'email',
-			'type'        => 'slug',
-			'pretres'     => 'textarea',
+			'date'               => 'date',
+			'heure'              => 'time',
+			'lieu'               => 'text',
+			'eglise'             => 'text',
+			'adresse'            => 'text',
+			'permanences'        => 'textarea',
+			'telephone'          => 'text',
+			'email'              => 'email',
+			'acces'              => 'textarea',
+			'cat'                => 'slug',
+			'couleur'            => 'color',
+			'cure_nom'           => 'text',
+			'cure_mot'           => 'textarea',
+			'cure_photo'         => 'url',
+			'cure_tel'           => 'text',
+			'theme_titre'        => 'text',
+			'theme_image'        => 'url',
+			'theme_lien'         => 'url',
+			'cure_email'         => 'email',
+			'type'               => 'slug',
+			'pretres'            => 'textarea',
 			'messes_semaine'     => 'textarea',
 			'messes_samedi'      => 'textarea',
 			'messes_dimanche'    => 'textarea',
 			'messes_confessions' => 'textarea',
-			'programme'   => 'textarea',
-			'responsable' => 'text',
-			'site'        => 'url',
-			'facebook'    => 'url',
-			'instagram'   => 'url',
-			'youtube'     => 'url',
+			'programme'          => 'textarea',
+			'responsable'        => 'text',
+			'site'               => 'url',
+			'facebook'           => 'url',
+			'instagram'          => 'url',
+			'youtube'            => 'url',
 		);
 		foreach ( $fields as $key => $type ) {
 			$name = 'vsg_' . $key;
@@ -201,7 +200,7 @@ add_action(
 			if ( ! is_scalar( $_POST[ $name ] ) ) {
 				continue;
 			}
-			$raw = (string) wp_unslash( $_POST[ $name ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$raw = (string) wp_unslash( $_POST[ $name ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- nettoyé juste après selon le type du champ.
 			switch ( $type ) {
 				case 'date':
 					$val = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ? $raw : '';

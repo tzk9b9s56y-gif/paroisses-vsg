@@ -20,7 +20,7 @@ the_post();
 <section class="band band--tight">
 	<div class="wrap narrow">
 		<p class="lead">Vous confiez votre intention aux prêtres de la paroisse, qui la portent dans leurs temps de prière quotidiens. Elle reste discrète : elle n'est pas lue à voix haute pendant la messe.</p>
-		<?php echo vsg_intention_form(); // phpcs:ignore ?>
+		<?php echo vsg_intention_form(); ?>
 	</div>
 </section>
 <?php

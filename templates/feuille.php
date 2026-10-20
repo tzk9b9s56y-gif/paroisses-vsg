@@ -11,10 +11,8 @@ $parish = vsg_context_parish();
 if ( $parish ) {
 	vsg_parish_band( $parish, get_post() );
 }
-$term = $parish ? vsg_page_term( $parish->ID ) : false;
-$q    = $term ? vsg_feuilles_query( array( $term->term_id ), 13 ) : null;
-$all  = $q ? $q->posts : array();
-$cur  = $all ? array_shift( $all ) : null;
+$vue = vsg_feuille_page_data( $parish );
+$cur = $vue['current'];
 ?>
 <section class="band">
 	<div class="wrap">
@@ -35,12 +33,12 @@ $cur  = $all ? array_shift( $all ) : null;
 		<?php endif; ?>
 	</div>
 </section>
-<?php if ( $all ) : ?>
+<?php if ( $vue['archives'] ) : ?>
 <section class="band band--soft">
 	<div class="wrap narrow">
 		<h2>Archives</h2>
 		<ul class="filelist">
-			<?php foreach ( $all as $f ) : ?>
+			<?php foreach ( $vue['archives'] as $f ) : ?>
 				<?php $pdf = vsg_feuille_pdf( $f ); ?>
 				<li>
 					<span><?php echo esc_html( vsg_feuille_label( $f ) ); ?></span>

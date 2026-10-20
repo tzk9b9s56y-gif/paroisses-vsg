@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<ruleset name="Paroisses VSG">
+	<description>Règles de codage WordPress du thème. Vérifiées à chaque envoi sur GitHub.</description>
+
+	<file>.</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<rule ref="WordPress-Extra">
+		<!-- Pas de traduction : le site est en français, pour une seule paroisse. -->
+		<exclude name="WordPress.WP.I18n"/>
+		<!-- Les commentaires de documentation sont rédigés en français, sans ponctuation imposée. -->
+		<exclude name="Squiz.Commenting"/>
+		<exclude name="Generic.Commenting"/>
+		<!-- Dans les modèles, une condition courte reste sur la ligne du HTML qu'elle entoure : un retour à la ligne
+		     entre deux éléments en ligne ajouterait un espace visible. -->
+		<exclude name="Squiz.ControlStructures.ControlSignature.NewlineAfterOpenBrace"/>
+	</rule>
+
+	<!-- Fonctions du thème qui renvoient du HTML déjà échappé (construit avec esc_html, esc_attr, esc_url). -->
+	<rule ref="WordPress.Security.EscapeOutput">
+		<properties>
+			<property name="customAutoEscapedFunctions" type="array">
+				<!-- Fonctions de WordPress qui renvoient du HTML déjà filtré. -->
+				<element value="wpautop"/>
+				<element value="make_clickable"/>
+				<element value="vsg_form_notices"/>
+				<element value="vsg_form_hidden"/>
+				<element value="vsg_form_error"/>
+				<element value="vsg_form_aria"/>
+				<element value="vsg_form_label"/>
+				<element value="vsg_form_consent"/>
+				<element value="vsg_form_timer_field"/>
+				<element value="vsg_agenda_type_links"/>
+				<element value="vsg_news_pager"/>
+				<element value="vsg_journal_table"/>
+				<element value="vsg_event"/>
+				<element value="vsg_news_card"/>
+				<element value="vsg_community_card"/>
+				<element value="vsg_tile"/>
+				<element value="vsg_thumb"/>
+				<element value="vsg_placeholder"/>
+				<element value="vsg_date_badge"/>
+				<element value="vsg_hours_block"/>
+				<element value="vsg_priest_block"/>
+				<element value="vsg_cure_contact_block"/>
+				<element value="vsg_messes_button"/>
+				<element value="vsg_itineraire"/>
+				<element value="vsg_mailto"/>
+				<element value="vsg_nl2br"/>
+				<element value="vsg_contact_form"/>
+				<element value="vsg_intention_form"/>
+				<element value="vsg_messe_form"/>
+				<element value="vsg_dons_block"/>
+				<element value="vsg_feuille_body"/>
+				<element value="vsg_mentions_content"/>
+				<element value="vsg_liens_html"/>
+				<element value="vsg_accent_attr"/>
+				<element value="vsg_event_type_options"/>
+				<element value="vsg_section_head"/>
+				<element value="vsg_communities_menu"/>
+				<element value="vsg_filters"/>
+				<element value="vsg_months_list"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Le jeton des formulaires publics est vérifié par vsg_form_submitted() (inc/formulaires.php). -->
+	<rule ref="WordPress.Security.NonceVerification">
+		<properties>
+			<property name="customNonceVerificationFunctions" type="array">
+				<element value="vsg_form_submitted"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Les variables locales des modèles de page (templates/, racine) sont dans la portée du fichier :
+	     la règle qui interdit d'écraser les globales de WordPress reste active, le préfixe n'est pas exigé. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound">
+		<exclude-pattern>*/templates/*</exclude-pattern>
+		<exclude-pattern>*/template-parts/*</exclude-pattern>
+		<exclude-pattern>/*.php</exclude-pattern>
+	</rule>
+
+	<!-- Préfixe des fonctions, constantes et options du thème. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="vsg"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

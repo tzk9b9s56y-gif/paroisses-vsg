@@ -11,9 +11,7 @@
  * Publier une version : augmenter « Version: » dans style.css et pousser sur main.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 define( 'VSG_GITHUB_REPO', 'tzk9b9s56y-gif/paroisses-vsg' );
 define( 'VSG_GITHUB_BRANCH', 'main' );
@@ -30,17 +28,26 @@ function vsg_remote_release( $force = false ) {
 	if ( ! $force && is_array( $cached ) ) {
 		return $cached;
 	}
-	$rel = array( 'version' => '', 'sha' => '' );
+	$rel = array(
+		'version' => '',
+		'sha'     => '',
+	);
 	$res = wp_remote_get(
 		'https://api.github.com/repos/' . VSG_GITHUB_REPO . '/commits/' . VSG_GITHUB_BRANCH,
-		array( 'timeout' => 10, 'headers' => array( 'Accept' => 'application/vnd.github.sha' ) )
+		array(
+			'timeout' => 10,
+			'headers' => array( 'Accept' => 'application/vnd.github.sha' ),
+		)
 	);
 	$sha = is_wp_error( $res ) ? '' : trim( wp_remote_retrieve_body( $res ) );
 	if ( 200 === wp_remote_retrieve_response_code( $res ) && preg_match( '/^[0-9a-f]{40}$/', $sha ) ) {
 		$css = wp_remote_get( 'https://raw.githubusercontent.com/' . VSG_GITHUB_REPO . '/' . $sha . '/style.css', array( 'timeout' => 10 ) );
 		if ( ! is_wp_error( $css ) && 200 === wp_remote_retrieve_response_code( $css )
 			&& preg_match( '/^\s*Version:\s*([0-9][0-9.]*)/mi', wp_remote_retrieve_body( $css ), $m ) ) {
-			$rel = array( 'version' => $m[1], 'sha' => $sha );
+			$rel = array(
+				'version' => $m[1],
+				'sha'     => $sha,
+			);
 		}
 	}
 	/*
@@ -62,7 +69,7 @@ add_filter(
 		$slug   = get_template();
 		$theme  = wp_get_theme( $slug );
 		$local  = $theme->get( 'Version' );
-		$force  = is_admin() && isset( $_GET['force-check'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		$force  = is_admin() && isset( $_GET['force-check'] ); // phpcs:ignore WordPress.Security.NonceVerification -- paramètre posé par WordPress lui-même (bouton « Vérifier à nouveau »).
 		$rel    = vsg_remote_release( $force );
 		$remote = $rel['version'];
 		$item   = array(

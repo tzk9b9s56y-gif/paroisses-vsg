@@ -23,7 +23,7 @@ Thème WordPress classique pour le site commun des paroisses Notre-Dame de Lourd
 ## Organisation des fichiers
 
 ```
-functions.php          chargement et réglages
+functions.php          réglages du thème et chargement des modules, par groupe
 inc/helpers.php        constantes, puis chargement de inc/helpers/ :
   helpers/dates.php      dates en français, lecture des champs
   helpers/lieux.php      paroisses, chapelles, catégories, couleurs, liens
@@ -32,26 +32,47 @@ inc/helpers.php        constantes, puis chargement de inc/helpers/ :
   helpers/groupes.php    communautés et groupes de prière
   helpers/rendu.php      cartes, tuiles, filtres, images
   helpers/fil-ariane.php fil d'Ariane
-inc/content-types.php  agenda et feuilles
-inc/meta-boxes.php     champs de saisie
-inc/contact.php        formulaire de contact (intentions.php, messes.php : les deux autres)
-inc/dons.php           dons en ligne (SumUp)
-inc/import.php         import et export de l'agenda (Excel)
-inc/securite.php       limites des formulaires et des connexions
-inc/seo.php            titres de page et description
+  helpers/pages.php      données de chaque modèle de page (les modèles ne font qu'afficher)
+inc/journal.php        journal technique (mises à jour, serveur)
+inc/securite.php       limites de connexion, discrétion, en-têtes HTTP
 inc/htaccess.php       règles de protection du serveur
+inc/seo.php            titres de page et description
 inc/mail.php           envoi des mails (SMTP)
 inc/maintenance.php    mode maintenance
+inc/content-types.php  agenda et feuilles
+inc/meta-boxes.php     champs de saisie
+inc/liens.php          liens utiles du pied de page
+inc/import.php         chargement de inc/import/ :
+  import/lecture.php     lecture des fichiers .csv et .xlsx
+  import/analyse.php     colonnes, lieux, types, validation
+  import/enregistrement.php  enregistrement et vidage de l'agenda
+  import/export.php      export .csv
+  import/page.php        page Agenda › Importer / exporter
+inc/formulaires.php    socle commun des formulaires (état, protection, champs, messages)
+inc/sumup.php          paiement en ligne SumUp et journal des paiements
+inc/contact.php        formulaire de contact
+inc/intentions.php     intentions de prière
+inc/dons.php           dons (réglages, formulaire)
+inc/messes.php         demandes de messe
 inc/admin.php          tableau de bord simplifié
+inc/a-completer.php    pages encore à rédiger
 inc/updater.php        version publiée sur GitHub
 inc/auto-update.php    installation automatique, sauvegarde et retour arrière
 inc/upgrade.php        mises à jour du contenu entre deux versions
-templates/             modèles de page
+templates/             modèles de page (affichage seulement)
 template-parts/        bandeau de paroisse
 assets/admin.css       styles des pages d'administration
 assets/js/             site.js (touche Échap, focus des erreurs), admin.js
 assets/fonts/          polices hébergées localement (licence OFL)
+phpcs.xml.dist         règles de codage vérifiées sur GitHub
 ```
+
+Règles tenues dans le code :
+
+- un fichier = un sujet ; les modules communs (`formulaires`, `sumup`, `journal`) sont les seuls partagés ;
+- les modèles de page reçoivent leurs données d'une fonction de `helpers/pages.php` et n'écrasent aucune variable globale de WordPress ;
+- tout HTML renvoyé par une fonction `vsg_*` est déjà échappé ; la liste de ces fonctions est dans `phpcs.xml.dist` ;
+- chaque exception aux règles de codage (`phpcs:ignore`) porte sa raison.
 
 ## Maintenance
 
@@ -69,4 +90,4 @@ Pour publier une version : modifier le code, augmenter `Version:` dans `style.cs
 
 ## Vérifications automatiques
 
-À chaque envoi sur GitHub (`.github/workflows/verifications.yml`) : syntaxe de tous les fichiers PHP et feuille de style complète (bloquants), règles de sécurité WordPress avec PHPCS (informatif).
+À chaque envoi sur GitHub (`.github/workflows/verifications.yml`), trois contrôles bloquants : syntaxe de tous les fichiers PHP, feuille de style complète, et règles de codage WordPress (`phpcs.xml.dist`, zéro écart). En local : `phpcs` à la racine du thème.

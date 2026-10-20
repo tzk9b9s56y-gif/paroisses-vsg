@@ -22,7 +22,10 @@ the_post();
 		<div class="grid grid--2">
 			<?php foreach ( vsg_parishes() as $p ) : ?>
 				<?php $sac = vsg_parish_child_by_template( $p->ID, 'templates/sacrements.php' ); ?>
-				<?php if ( ! $sac ) { continue; } ?>
+				<?php
+				if ( ! $sac ) {
+					continue; }
+				?>
 				<div class="infocard" style="--accent:<?php echo esc_attr( vsg_parish_color( $p ) ); ?>;border-top:4px solid var(--accent)">
 					<span class="eyebrow">Paroisse</span>
 					<h3 style="color:var(--accent);font-size:24px"><?php echo esc_html( get_the_title( $p ) ); ?></h3>

@@ -7,9 +7,7 @@
  *   Une page sort de la liste dès que le bloc est retiré de son contenu.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 const VSG_A_VENIR = '<!-- wp:shortcode -->[vsg_a_venir]<!-- /wp:shortcode -->';
 
@@ -17,7 +15,7 @@ add_shortcode(
 	'vsg_a_venir',
 	function () {
 		$parish = vsg_context_parish();
-		if ( ! $parish && function_exists( 'vsg_parishes' ) ) {
+		if ( ! $parish ) {
 			$all    = vsg_parishes();
 			$parish = $all ? $all[0] : null;
 		}

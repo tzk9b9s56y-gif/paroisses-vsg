@@ -30,7 +30,7 @@ if ( $parish ) {
 		<?php vsg_section_head( 'Nos lieux de culte' ); ?>
 		<div class="grid grid--3">
 			<div class="placecard">
-				<div class="placecard__media"><?php echo vsg_thumb( $parish, 'vsg-card', 'Photo' ); // phpcs:ignore ?></div>
+				<div class="placecard__media"><?php echo vsg_thumb( $parish, 'vsg-card', 'Photo' ); ?></div>
 				<div class="placecard__body">
 					<h3>Église <?php echo esc_html( get_the_title( $parish ) ); ?></h3>
 					<p><?php echo esc_html( vsg_meta( $parish->ID, 'eglise' ) ); ?></p>
@@ -39,7 +39,7 @@ if ( $parish ) {
 			</div>
 			<?php foreach ( vsg_chapels( $parish->ID ) as $c ) : ?>
 				<a class="placecard" href="<?php echo esc_url( get_permalink( $c ) ); ?>">
-					<div class="placecard__media"><?php echo vsg_thumb( $c, 'vsg-card', 'Photo' ); // phpcs:ignore ?></div>
+					<div class="placecard__media"><?php echo vsg_thumb( $c, 'vsg-card', 'Photo' ); ?></div>
 					<div class="placecard__body">
 						<h3><?php echo esc_html( get_the_title( $c ) ); ?></h3>
 						<p><?php echo esc_html( vsg_meta( $c->ID, 'adresse' ) ); ?></p>

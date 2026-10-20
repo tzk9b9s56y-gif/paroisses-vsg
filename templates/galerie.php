@@ -34,7 +34,7 @@ list( $albums, $videos ) = vsg_gallery_items( $parish );
 					}
 					?>
 					<a class="album" href="<?php echo esc_url( get_permalink( $a ) ); ?>">
-						<span class="album__media"><?php echo vsg_thumb( $a ); // phpcs:ignore ?></span>
+						<span class="album__media"><?php echo vsg_thumb( $a ); ?></span>
 						<span class="album__title"><?php echo esc_html( get_the_title( $a ) ); ?></span>
 						<span class="album__meta"><?php echo esc_html( vsg_post_date( $a ) . ( $count ? ' · ' . $count . ' photos' : '' ) ); ?></span>
 					</a>
@@ -51,7 +51,7 @@ list( $albums, $videos ) = vsg_gallery_items( $parish );
 		<?php if ( $videos ) : ?>
 			<div class="grid grid--3">
 				<?php foreach ( $videos as $v ) : ?>
-					<?php echo vsg_news_card( $v, false, true ); // phpcs:ignore ?>
+					<?php echo vsg_news_card( $v, false, true ); ?>
 				<?php endforeach; ?>
 			</div>
 		<?php else : ?>

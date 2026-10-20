@@ -29,24 +29,24 @@ function vsg_date_parts( $ymd ) {
 	}
 	$m = (int) gmdate( 'n', $t ) - 1;
 	return array(
-		'day'       => gmdate( 'j', $t ),
-		'month'     => vsg_months_short()[ $m ],
-		'month_full'=> vsg_months()[ $m ],
-		'year'      => gmdate( 'Y', $t ),
-		'dow'       => vsg_days()[ (int) gmdate( 'w', $t ) ],
-		'ym'        => gmdate( 'Y-m', $t ),
+		'day'        => gmdate( 'j', $t ),
+		'month'      => vsg_months_short()[ $m ],
+		'month_full' => vsg_months()[ $m ],
+		'year'       => gmdate( 'Y', $t ),
+		'dow'        => vsg_days()[ (int) gmdate( 'w', $t ) ],
+		'ym'         => gmdate( 'Y-m', $t ),
 	);
 }
 
 function vsg_date_long( $ymd ) {
 	$p = vsg_date_parts( $ymd );
-	return $p ? sprintf( '%s %s %s', $p['dow'], $p['day'] === '1' ? '1er' : $p['day'], $p['month_full'] ) : '';
+	return $p ? sprintf( '%s %s %s', $p['dow'], '1' === $p['day'] ? '1er' : $p['day'], $p['month_full'] ) : '';
 }
 
 /** Date de publication d'un article, en français. */
 function vsg_post_date( $post ) {
 	$p = vsg_date_parts( get_the_date( 'Y-m-d', $post ) );
-	return $p ? sprintf( '%s %s %s', $p['day'] === '1' ? '1er' : $p['day'], $p['month_full'], $p['year'] ) : '';
+	return $p ? sprintf( '%s %s %s', '1' === $p['day'] ? '1er' : $p['day'], $p['month_full'], $p['year'] ) : '';
 }
 
 function vsg_time_label( $hm ) {

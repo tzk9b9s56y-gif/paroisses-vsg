@@ -5,9 +5,7 @@
  * Tout se règle dans Réglages › Général.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /** Adresse qui reçoit le formulaire de contact (sauf si la paroisse choisie a sa propre adresse). */
 function vsg_contact_email() {
@@ -34,9 +32,13 @@ function vsg_smtp_pass() {
 
 /* Secrets jamais chargés automatiquement avec les réglages de chaque page. */
 function vsg_secrets_no_autoload() {
-	if ( function_exists( 'wp_set_option_autoload_values' ) ) {
-		wp_set_option_autoload_values( array( 'vsg_smtp_pass' => false, 'vsg_dons_key' => false, 'vsg_update_secret' => false ) );
-	}
+	wp_set_option_autoload_values(
+		array(
+			'vsg_smtp_pass'     => false,
+			'vsg_dons_key'      => false,
+			'vsg_update_secret' => false,
+		)
+	);
 }
 add_action( 'update_option_vsg_smtp_pass', 'vsg_secrets_no_autoload' );
 add_action( 'add_option_vsg_smtp_pass', 'vsg_secrets_no_autoload' );
@@ -45,15 +47,44 @@ add_action( 'add_option_vsg_smtp_pass', 'vsg_secrets_no_autoload' );
 function vsg_mail_error_store( $msg, $fallback ) {
 	$msg = preg_replace( '/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i', '[adresse]', (string) $msg );
 	delete_option( 'vsg_mail_last_error' );
-	set_transient( 'vsg_mail_last_error', array( 'time' => time(), 'msg' => $msg, 'fallback' => $fallback ), 7 * DAY_IN_SECONDS );
+	set_transient(
+		'vsg_mail_last_error',
+		array(
+			'time'     => time(),
+			'msg'      => $msg,
+			'fallback' => $fallback,
+		),
+		7 * DAY_IN_SECONDS
+	);
 }
 
 add_action(
 	'admin_init',
 	function () {
-		register_setting( 'general', 'vsg_contact_email', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_email' ) );
-		register_setting( 'general', 'vsg_mail_from', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_email' ) );
-		register_setting( 'general', 'vsg_smtp_host', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting(
+			'general',
+			'vsg_contact_email',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_email',
+			)
+		);
+		register_setting(
+			'general',
+			'vsg_mail_from',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_email',
+			)
+		);
+		register_setting(
+			'general',
+			'vsg_smtp_host',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
 		register_setting(
 			'general',
 			'vsg_smtp_pass',
@@ -61,7 +92,7 @@ add_action(
 				'type'              => 'string',
 				'sanitize_callback' => function ( $v ) {
 					/* Champ laissé vide : on garde le mot de passe déjà enregistré. */
-					if ( ! empty( $_POST['vsg_smtp_clear'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+					if ( ! empty( $_POST['vsg_smtp_clear'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification -- appelé par options.php, qui a déjà vérifié le jeton.
 						return '';
 					}
 					$v = (string) $v;
@@ -133,6 +164,7 @@ add_action(
 			return;
 		}
 		$host = get_option( 'vsg_smtp_host', '' );
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- propriétés imposées par PHPMailer.
 		$mailer->isSMTP();
 		$mailer->Host       = $host ? $host : 'ssl0.ovh.net';
 		$mailer->Port       = 465;
@@ -140,6 +172,7 @@ add_action(
 		$mailer->SMTPAuth   = true;
 		$mailer->Username   = $from;
 		$mailer->Password   = $pass;
+		// phpcs:enable
 	}
 );
 
@@ -162,7 +195,7 @@ add_action(
  */
 function vsg_send_mail( $to, $subject, $message, $headers = array() ) {
 	$GLOBALS['vsg_mail_error'] = '';
-	$sent = wp_mail( $to, $subject, $message, $headers );
+	$sent                      = wp_mail( $to, $subject, $message, $headers );
 	if ( ! $sent && vsg_smtp_on() ) {
 		$err                     = $GLOBALS['vsg_mail_error'];
 		$GLOBALS['vsg_smtp_off'] = true;

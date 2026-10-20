@@ -1,16 +1,14 @@
 <?php
 /**
  * Sécurité et discrétion, sans extension :
- * - limitation des tentatives de connexion et des envois de formulaires ;
+ * - limitation des tentatives de connexion (les formulaires : voir inc/formulaires.php) ;
  * - XML-RPC désactivé, comptes non énumérables, version de WordPress masquée ;
  * - en-têtes de sécurité HTTP ;
  * - pages de filtres et de confirmation exclues des moteurs de recherche ;
  * - vidéos YouTube intégrées en mode « sans cookie ».
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Empreinte de l'adresse IP du visiteur (l'adresse elle-même n'est jamais conservée).
@@ -20,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function vsg_ip_hash() {
 	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 	if ( false !== strpos( $ip, ':' ) ) {
-		$bin = @inet_pton( $ip ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+		$bin = @inet_pton( $ip ); // phpcs:ignore WordPress.PHP.NoSilencedErrors -- inet_pton signale une adresse illisible par un avertissement ; on teste le résultat.
 		if ( false !== $bin && 16 === strlen( $bin ) ) {
 			$ip = bin2hex( substr( $bin, 0, 8 ) ) . '::/64';
 		}
@@ -99,58 +97,6 @@ add_filter(
 	}
 );
 
-/* ---------- Formulaires publics : délai minimal et nombre d'envois ---------- */
-
-/** Champ caché à mettre dans chaque formulaire public : heure d'affichage, signée. */
-function vsg_form_timer_field() {
-	$t = time();
-	return '<input type="hidden" name="vsg_t" value="' . esc_attr( $t . '.' . wp_hash( 'vsg_t' . $t ) ) . '">';
-}
-
-/** Coupe un texte saisi à une longueur raisonnable (protège les mails et la mémoire). */
-function vsg_clip( $text, $max ) {
-	return mb_substr( (string) $text, 0, $max );
-}
-
-/* Plafond pour tout le site : au plus 30 envois de formulaire par heure, toutes connexions confondues. */
-const VSG_FORMS_PER_HOUR = 30;
-
-/**
- * Contrôle anti-robot d'un envoi : formulaire affiché depuis au moins 4 secondes et moins de 2 heures,
- * au plus $max envois par période de $period depuis une même connexion, et plafond horaire du site.
- * Retourne '' si l'envoi est accepté, sinon un message pour le visiteur.
- */
-function vsg_form_guard( $form, $max = 5, $period = 600 ) {
-	$raw   = sanitize_text_field( wp_unslash( $_POST['vsg_t'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification -- le nonce est vérifié par l'appelant.
-	$parts = explode( '.', $raw, 2 );
-	$t     = (int) ( $parts[0] ?? 0 );
-	if ( ! $t || ! hash_equals( wp_hash( 'vsg_t' . $t ), (string) ( $parts[1] ?? '' ) ) ) {
-		return 'La page a expiré. Merci de renvoyer le formulaire.';
-	}
-	if ( function_exists( 'vsg_maint_is_on' ) && vsg_maint_is_on() && ! current_user_can( 'edit_posts' ) ) {
-		return 'Le site est en maintenance : les formulaires sont fermés pour quelques instants.';
-	}
-	if ( time() - $t < 4 ) {
-		return 'Envoi trop rapide. Merci de patienter quelques secondes et de renvoyer le formulaire.';
-	}
-	if ( time() - $t > 2 * HOUR_IN_SECONDS ) {
-		return 'La page a expiré. Merci de renvoyer le formulaire.';
-	}
-	$hour  = 'vsg_rl_site_' . gmdate( 'YmdH' );
-	$total = (int) get_transient( $hour );
-	if ( $total >= VSG_FORMS_PER_HOUR ) {
-		return 'Le service est momentanément saturé. Merci de réessayer dans une heure, ou d\'appeler l\'accueil paroissial.';
-	}
-	$key = 'vsg_rl_' . $form . '_' . vsg_ip_hash();
-	$n   = (int) get_transient( $key );
-	if ( $n >= $max ) {
-		return 'Vous avez déjà envoyé plusieurs demandes. Merci de réessayer un peu plus tard, ou d\'appeler l\'accueil paroissial.';
-	}
-	set_transient( $key, $n + 1, $period );
-	set_transient( $hour, $total + 1, HOUR_IN_SECONDS );
-	return '';
-}
-
 /* ---------- Discrétion ---------- */
 
 add_filter( 'xmlrpc_enabled', '__return_false' );
@@ -171,7 +117,7 @@ add_filter( 'author_rewrite_rules', '__return_empty_array' );
 add_action(
 	'template_redirect',
 	function () {
-		if ( is_author() || isset( $_GET['author'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( is_author() || isset( $_GET['author'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification -- simple lecture d'un paramètre pour refuser l'énumération des comptes.
 			wp_safe_redirect( home_url( '/' ), 301 );
 			exit;
 		}
@@ -219,7 +165,14 @@ add_filter(
 	'wp_sitemaps_posts_query_args',
 	function ( $args, $post_type ) {
 		if ( 'evenement' === $post_type ) {
-			$args['meta_query'] = array( array( 'key' => '_vsg_date', 'value' => vsg_today(), 'compare' => '>=', 'type' => 'DATE' ) ); // phpcs:ignore WordPress.DB.SlowDBQuery
+			$args['meta_query'] = array(
+				array(
+					'key'     => '_vsg_date',
+					'value'   => vsg_today(),
+					'compare' => '>=',
+					'type'    => 'DATE',
+				),
+			); // phpcs:ignore WordPress.DB.SlowDBQuery -- au plus une poignée de rendez-vous privés, requête rare.
 		}
 		return $args;
 	},
@@ -252,7 +205,7 @@ add_filter(
 	'wp_robots',
 	function ( $robots ) {
 		foreach ( array( 'lieu', 'type', 'pg', 'message', 'don', 'messe', 'objet', 'ref' ) as $k ) {
-			if ( isset( $_GET[ $k ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			if ( isset( $_GET[ $k ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification -- simple lecture de paramètres de filtre pour la balise noindex.
 				$robots['noindex'] = true;
 				$robots['follow']  = true;
 				break;
@@ -274,10 +227,10 @@ add_filter( 'render_block_core/embed', 'vsg_youtube_nocookie', 20 );
 /* ---------- Adresses e-mail affichées ---------- */
 
 /** Lien mailto lisible par les visiteurs, brouillé pour les robots qui collectent les adresses. */
-function vsg_mailto( $email, $class = '' ) {
+function vsg_mailto( $email, $css_class = '' ) {
 	$email = sanitize_email( $email );
 	if ( ! is_email( $email ) ) {
 		return '';
 	}
-	return '<a href="' . esc_attr( 'mailto:' . antispambot( $email, 1 ) ) . '"' . ( $class ? ' class="' . esc_attr( $class ) . '"' : '' ) . '>' . antispambot( $email ) . '</a>';
+	return '<a href="' . esc_attr( 'mailto:' . antispambot( $email, 1 ) ) . '"' . ( $css_class ? ' class="' . esc_attr( $css_class ) . '"' : '' ) . '>' . antispambot( $email ) . '</a>';
 }

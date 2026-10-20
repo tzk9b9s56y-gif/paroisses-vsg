@@ -4,16 +4,14 @@
  * affichés dans le pied de page.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 function vsg_liens_defaut() {
 	return "Le Saint-Siège (Vatican) | https://www.vatican.va/content/vatican/fr.html\n"
 		. "Vatican News | https://www.vaticannews.va/fr.html\n"
 		. "Diocèse de Créteil | https://catholiques-val-de-marne.cef.fr/\n"
 		. "Église catholique en France | https://eglise.catholique.fr/\n"
-		. "AELF – textes liturgiques | https://www.aelf.org/";
+		. 'AELF – textes liturgiques | https://www.aelf.org/';
 }
 
 /** Adresse web acceptable : http(s) et bien formée. */

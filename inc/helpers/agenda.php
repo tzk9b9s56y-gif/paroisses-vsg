@@ -38,7 +38,10 @@ function vsg_event_types() {
 /** Options d'une liste déroulante des types, rangées en deux groupes. */
 function vsg_event_type_options( $current = '' ) {
 	$out = '';
-	foreach ( array( 'Communautés et groupes de prière' => true, 'Vie paroissiale' => false ) as $label => $is_group ) {
+	foreach ( array(
+		'Communautés et groupes de prière' => true,
+		'Vie paroissiale'                  => false,
+	) as $label => $is_group ) {
 		$out .= '<optgroup label="' . esc_attr( $label ) . '">';
 		foreach ( vsg_event_types() as $slug => $t ) {
 			if ( (bool) $t[2] === $is_group ) {
@@ -65,28 +68,37 @@ function vsg_event_type_aliases() {
 function vsg_event_type( $post ) {
 	$slug  = vsg_meta( $post->ID, 'type' );
 	$types = vsg_event_types();
-	return isset( $types[ $slug ] ) ? array_merge( array( 'slug' => $slug ), array( 'label' => $types[ $slug ][0], 'color' => $types[ $slug ][1] ) ) : null;
+	return isset( $types[ $slug ] ) ? array_merge(
+		array( 'slug' => $slug ),
+		array(
+			'label' => $types[ $slug ][0],
+			'color' => $types[ $slug ][1],
+		)
+	) : null;
 }
 
 function vsg_events_query( $args = array() ) {
-	$args = wp_parse_args(
+	$args   = wp_parse_args(
 		$args,
 		array(
-			'terms'    => array(),
-			'limit'    => 3,
-			'from'     => vsg_today(),
-			'children' => true,
+			'terms'         => array(),
+			'limit'         => 3,
+			'from'          => vsg_today(),
+			'children'      => true,
 			'exclude_terms' => array(),
-			'kind'     => '', // '' = tout, 'parish' = activités paroissiales, 'groups' = groupes et communautés
-			'type'     => '', // un type de rendez-vous précis
+			'kind'          => '', // '' = tout, 'parish' = activités paroissiales, 'groups' = groupes et communautés
+			'type'          => '', // un type de rendez-vous précis
 		)
 	);
-	$q = array(
+	$q      = array(
 		'post_type'      => 'evenement',
 		'post_status'    => current_user_can( 'read_private_posts' ) ? array( 'publish', 'private' ) : 'publish',
 		'posts_per_page' => $args['limit'],
 		'meta_key'       => '_vsg_date',
-		'orderby'        => array( 'meta_value' => 'ASC', 'title' => 'ASC' ),
+		'orderby'        => array(
+			'meta_value' => 'ASC',
+			'title'      => 'ASC',
+		),
 		'meta_query'     => array(
 			array(
 				'key'     => '_vsg_date',
@@ -100,14 +112,28 @@ function vsg_events_query( $args = array() ) {
 	if ( 'parish' === $args['kind'] ) {
 		$q['meta_query'][] = array(
 			'relation' => 'OR',
-			array( 'key' => '_vsg_type', 'compare' => 'NOT EXISTS' ),
-			array( 'key' => '_vsg_type', 'value' => $groups, 'compare' => 'NOT IN' ),
+			array(
+				'key'     => '_vsg_type',
+				'compare' => 'NOT EXISTS',
+			),
+			array(
+				'key'     => '_vsg_type',
+				'value'   => $groups,
+				'compare' => 'NOT IN',
+			),
 		);
 	} elseif ( 'groups' === $args['kind'] ) {
-		$q['meta_query'][] = array( 'key' => '_vsg_type', 'value' => $groups, 'compare' => 'IN' );
+		$q['meta_query'][] = array(
+			'key'     => '_vsg_type',
+			'value'   => $groups,
+			'compare' => 'IN',
+		);
 	}
 	if ( $args['type'] ) {
-		$q['meta_query'][] = array( 'key' => '_vsg_type', 'value' => $args['type'] );
+		$q['meta_query'][] = array(
+			'key'   => '_vsg_type',
+			'value' => $args['type'],
+		);
 	}
 	if ( $args['terms'] ) {
 		$q['tax_query'] = array(
@@ -151,7 +177,12 @@ function vsg_event_group( $post ) {
 		return null;
 	}
 	$page = vsg_group_page( $type['slug'], vsg_event_parish( $post ) );
-	return array( 'label' => $type['label'], 'color' => $type['color'], 'url' => $page ? get_permalink( $page ) : '', 'page' => $page );
+	return array(
+		'label' => $type['label'],
+		'color' => $type['color'],
+		'url'   => $page ? get_permalink( $page ) : '',
+		'page'  => $page,
+	);
 }
 
 /** Regroupe des rendez-vous par mois puis par jour : ym => array( label, days => array( ymd => posts ) ). */
@@ -162,7 +193,10 @@ function vsg_events_by_month( $posts ) {
 		$parts = vsg_date_parts( $date );
 		$key   = $parts ? $parts['ym'] : '0000-00';
 		if ( ! isset( $months[ $key ] ) ) {
-			$months[ $key ] = array( 'label' => $parts ? ucfirst( $parts['month_full'] ) . ' ' . $parts['year'] : '', 'days' => array() );
+			$months[ $key ] = array(
+				'label' => $parts ? ucfirst( $parts['month_full'] ) . ' ' . $parts['year'] : '',
+				'days'  => array(),
+			);
 		}
 		$months[ $key ]['days'][ $date ][] = $ev;
 	}
@@ -173,13 +207,13 @@ function vsg_events_by_month( $posts ) {
 function vsg_months_list( $months, $show_place = true ) {
 	$i = 0;
 	foreach ( $months as $ym => $m ) {
-		$i++;
+		++$i;
 		echo '<details class="month"' . ( 1 === $i ? ' open' : '' ) . ' id="m-' . esc_attr( $ym ) . '">';
 		echo '<summary><h2 class="month__title">' . esc_html( $m['label'] ) . '</h2><span class="month__count">' . esc_html( array_sum( array_map( 'count', $m['days'] ) ) ) . ' rendez-vous</span></summary><div class="month__body">';
 		foreach ( $m['days'] as $ymd => $evs ) {
 			echo '<div class="day"><h3 class="day__title">' . esc_html( ucfirst( vsg_date_long( $ymd ) ) ) . '</h3><div class="list list--tight">';
 			foreach ( $evs as $ev ) {
-				echo vsg_event( $ev, 'row', $show_place ); // phpcs:ignore
+				echo vsg_event( $ev, 'row', $show_place );
 			}
 			echo '</div></div>';
 		}
@@ -191,11 +225,19 @@ function vsg_months_list( $months, $show_place = true ) {
 function vsg_events_unique( $posts, $n = 3 ) {
 	/* Les rendez-vous qui ont une affiche (image mise en avant) passent devant : ce sont les temps forts annoncés. */
 	$posts = array_merge(
-		array_filter( $posts, function ( $p ) { return has_post_thumbnail( $p ); } ),
-		array_filter( $posts, function ( $p ) { return ! has_post_thumbnail( $p ); } )
+		array_filter(
+			$posts,
+			function ( $p ) {
+				return has_post_thumbnail( $p ); }
+		),
+		array_filter(
+			$posts,
+			function ( $p ) {
+				return ! has_post_thumbnail( $p ); }
+		)
 	);
-	$out  = array();
-	$seen = array();
+	$out   = array();
+	$seen  = array();
 	foreach ( $posts as $p ) {
 		$k = get_the_title( $p );
 		if ( isset( $seen[ $k ] ) ) {
@@ -212,7 +254,7 @@ function vsg_events_unique( $posts, $n = 3 ) {
 
 /** Lieu affichable : paroisse ou chapelle (sauf « Les deux paroisses ») et lieu précis. */
 function vsg_event_where( $post ) {
-	$place = vsg_place_label( $post );
+	$place  = vsg_place_label( $post );
 	$common = vsg_common_term();
 	if ( $common && $place === $common->name ) {
 		$place = '';
@@ -228,20 +270,20 @@ function vsg_news_query( $args = array() ) {
 	$args = wp_parse_args(
 		$args,
 		array(
-			'terms'   => array(),
-			'limit'   => 3,
-			'paged'   => 1,
-			'exclude' => array(),
-			'children'=> true,
+			'terms'         => array(),
+			'limit'         => 3,
+			'paged'         => 1,
+			'exclude'       => array(),
+			'children'      => true,
 			'exclude_terms' => array(),
 		)
 	);
-	$q = array(
-		'post_type'      => 'post',
-		'post_status'    => 'publish',
-		'posts_per_page' => $args['limit'],
-		'paged'          => $args['paged'],
-		'post__not_in'   => $args['exclude'],
+	$q    = array(
+		'post_type'           => 'post',
+		'post_status'         => 'publish',
+		'posts_per_page'      => $args['limit'],
+		'paged'               => $args['paged'],
+		'post__not_in'        => $args['exclude'],
 		'ignore_sticky_posts' => true,
 	);
 	if ( $args['terms'] ) {

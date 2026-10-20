@@ -31,7 +31,10 @@ $parent = wp_get_post_parent_id( get_the_ID() );
 					<p>Contactez l'accueil de la paroisse<?php echo vsg_meta( $parish->ID, 'telephone' ) ? ' au ' . esc_html( vsg_meta( $parish->ID, 'telephone' ) ) : ''; ?>, ou écrivez-nous.</p>
 					<a class="btn" href="<?php echo esc_url( get_permalink( $infos ) ); ?>#contact-form">Contacter l'accueil</a>
 				</aside>
-				<?php if ( in_array( get_post_field( 'post_name' ), array( 'mariage', 'reconciliation' ), true ) ) { echo vsg_cure_contact_block(); } // phpcs:ignore ?>
+				<?php
+				if ( in_array( get_post_field( 'post_name' ), array( 'mariage', 'reconciliation' ), true ) ) {
+					echo vsg_cure_contact_block(); }
+				?>
 				<?php
 			endif;
 		endif;

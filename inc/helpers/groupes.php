@@ -34,7 +34,14 @@ function vsg_communities( $parish_id = null ) {
 
 /** Communautés communes aux deux paroisses (hors arborescence d'une paroisse). */
 function vsg_communities_common() {
-	return array_values( array_filter( vsg_communities(), function ( $c ) { return ! vsg_context_parish( $c ); } ) );
+	return array_values(
+		array_filter(
+			vsg_communities(),
+			function ( $c ) {
+				return ! vsg_context_parish( $c );
+			}
+		)
+	);
 }
 
 /**
@@ -69,9 +76,9 @@ function vsg_communities_menu( $current = 0 ) {
 			$items[ 'c-' . $c->ID ] = array( $label, get_permalink( $c ) . '#programme' );
 		}
 	}
-	$cur = $current ? 'c-' . $current : '';
+	$cur       = $current ? 'c-' . $current : '';
 	$cur_label = isset( $items[ $cur ] ) ? $items[ $cur ][0] : '';
-	$links = '';
+	$links     = '';
 	foreach ( $items as $slug => $it ) {
 		if ( '' === $it[1] ) {
 			$links .= '<span class="legend__head">' . esc_html( $it[0] ) . '</span>';
@@ -79,12 +86,18 @@ function vsg_communities_menu( $current = 0 ) {
 			$links .= '<a href="' . esc_url( $it[1] ) . '"' . ( $slug === $cur ? ' aria-current="true"' : '' ) . '>' . esc_html( $it[0] ) . '</a>';
 		}
 	}
-	echo '<details class="menu menu--filters"><summary><span class="menu__label">Groupe ou communauté</span><span class="menu__current">' . esc_html( $cur_label ) . '</span></summary><nav aria-label="Groupe ou communauté">' . $links . '</nav></details>'; // phpcs:ignore
+	echo '<details class="menu menu--filters"><summary><span class="menu__label">Groupe ou communauté</span><span class="menu__current">' . esc_html( $cur_label ) . '</span></summary><nav aria-label="Groupe ou communauté">' . $links . '</nav></details>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- liens construits avec esc_url() et esc_html().
 }
 
 /** Page commune qui liste toutes les communautés (modèle « Communautés », hors paroisse). */
 function vsg_communities_page() {
-	foreach ( get_pages( array( 'meta_key' => '_wp_page_template', 'meta_value' => VSG_TPL_COMMUNAUTES, 'hierarchical' => 0 ) ) as $p ) {
+	foreach ( get_pages(
+		array(
+			'meta_key'     => '_wp_page_template',
+			'meta_value'   => VSG_TPL_COMMUNAUTES,
+			'hierarchical' => 0,
+		)
+	) as $p ) {
 		if ( ! vsg_context_parish( $p ) ) {
 			return $p;
 		}
@@ -139,8 +152,8 @@ function vsg_community_card( $page, $show_parish = true ) {
 	$prog   = array_values( array_filter( array_map( 'trim', explode( "\n", vsg_meta( $page->ID, 'programme' ) ) ) ) );
 	ob_start();
 	?>
-	<a class="card" href="<?php echo esc_url( get_permalink( $page ) ); ?>"<?php echo vsg_accent_attr( $page ); // phpcs:ignore ?>>
-		<span class="card__media"><?php echo vsg_thumb( $page, 'vsg-card', 'Communauté' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+	<a class="card" href="<?php echo esc_url( get_permalink( $page ) ); ?>"<?php echo vsg_accent_attr( $page ); ?>>
+		<span class="card__media"><?php echo vsg_thumb( $page, 'vsg-card', 'Communauté' ); ?></span>
 		<span class="card__body">
 			<?php if ( $show_parish && $parish ) : ?><span class="chip"><?php echo esc_html( get_the_title( $parish ) ); ?></span><?php endif; ?>
 			<span class="card__title"><?php echo esc_html( get_the_title( $page ) ); ?></span>

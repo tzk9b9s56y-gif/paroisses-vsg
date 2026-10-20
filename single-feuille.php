@@ -13,21 +13,18 @@ $parish = vsg_context_parish();
 if ( $parish ) {
 	vsg_parish_band( $parish, get_post() );
 }
-$pdf  = vsg_feuille_pdf( get_post() );
-$rest = '';
-foreach ( parse_blocks( get_the_content() ) as $b ) {
-	if ( 'core/file' !== $b['blockName'] ) {
-		$rest .= render_block( $b );
-	}
-}
-$page = $parish ? vsg_parish_child_by_template( $parish->ID, 'templates/feuille.php' ) : null;
+$pdf   = vsg_feuille_pdf( get_post() );
+$rest  = vsg_feuille_body( get_post() );
+$index = $parish ? vsg_parish_child_by_template( $parish->ID, 'templates/feuille.php' ) : null;
 ?>
 <article class="band">
 	<div class="wrap narrow">
 		<div class="featurefile">
 			<span class="eyebrow">Feuille paroissiale<?php echo $parish ? ' · ' . esc_html( get_the_title( $parish ) ) : ''; ?></span>
 			<h1 class="featurefile__title"><?php echo esc_html( vsg_feuille_label( get_post() ) ); ?></h1>
-			<?php if ( trim( wp_strip_all_tags( $rest ) ) ) : ?><div class="prose"><?php echo $rest; // phpcs:ignore ?></div><?php endif; ?>
+			<?php if ( trim( wp_strip_all_tags( $rest ) ) ) : ?>
+				<div class="prose"><?php echo vsg_feuille_body( get_post() ); ?></div>
+			<?php endif; ?>
 			<?php if ( $pdf ) : ?>
 				<div class="actions">
 					<a class="btn" href="<?php echo esc_url( $pdf ); ?>" download>Télécharger le PDF</a>
@@ -37,8 +34,8 @@ $page = $parish ? vsg_parish_child_by_template( $parish->ID, 'templates/feuille.
 				<p class="muted">Le fichier PDF n'est pas encore disponible.</p>
 			<?php endif; ?>
 		</div>
-		<?php if ( $page ) : ?>
-			<p class="backlink"><a href="<?php echo esc_url( get_permalink( $page ) ); ?>">Toutes les feuilles de la paroisse</a></p>
+		<?php if ( $index ) : ?>
+			<p class="backlink"><a href="<?php echo esc_url( get_permalink( $index ) ); ?>">Toutes les feuilles de la paroisse</a></p>
 		<?php endif; ?>
 	</div>
 </article>

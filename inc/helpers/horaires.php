@@ -8,13 +8,34 @@ defined( 'ABSPATH' ) || exit;
 /** Lignes d'horaires d'un lieu, par moment de la semaine. */
 function vsg_hours( $page_id ) {
 	$out = array();
-	foreach ( array( 'semaine' => 'En semaine', 'samedi' => 'Samedi', 'dimanche' => 'Dimanche', 'confessions' => 'Confessions et adoration' ) as $k => $label ) {
+	foreach ( array(
+		'semaine'     => 'En semaine',
+		'samedi'      => 'Samedi',
+		'dimanche'    => 'Dimanche',
+		'confessions' => 'Confessions et adoration',
+	) as $k => $label ) {
 		$lines = array_values( array_filter( array_map( 'trim', explode( "\n", vsg_meta( $page_id, 'messes_' . $k ) ) ) ) );
 		if ( $lines ) {
-			$out[ $k ] = array( 'label' => $label, 'lines' => $lines );
+			$out[ $k ] = array(
+				'label' => $label,
+				'lines' => $lines,
+			);
 		}
 	}
 	return $out;
+}
+
+/** Messes du dimanche en une ligne (« messe à 9 h 30, messe à 11 h »). */
+function vsg_hours_sunday_line( $hours ) {
+	return implode(
+		', ',
+		array_map(
+			function ( $l ) {
+				return preg_replace( '/^Messe (à )?/u', 'messe à ', $l );
+			},
+			$hours['dimanche']['lines']
+		)
+	);
 }
 
 /** Bloc d'horaires d'un lieu (titre facultatif). */
@@ -44,7 +65,13 @@ function vsg_hours_block( $page_id, $title = '', $compact = false ) {
 
 /** Page commune des horaires (modèle « Horaires »). */
 function vsg_hours_page() {
-	$pages = get_pages( array( 'meta_key' => '_wp_page_template', 'meta_value' => VSG_TPL_HORAIRES, 'hierarchical' => 0 ) );
+	$pages = get_pages(
+		array(
+			'meta_key'     => '_wp_page_template',
+			'meta_value'   => VSG_TPL_HORAIRES,
+			'hierarchical' => 0,
+		)
+	);
 	return $pages ? $pages[0] : null;
 }
 
@@ -69,7 +96,7 @@ function vsg_hours_places() {
 
 /** Lieu demandé par ?lieu= sur la page des horaires (ou ''). */
 function vsg_hours_current() {
-	$slug = isset( $_GET['lieu'] ) ? sanitize_title( wp_unslash( $_GET['lieu'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+	$slug = isset( $_GET['lieu'] ) ? sanitize_title( wp_unslash( $_GET['lieu'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre d'affichage.
 	return ( $slug && isset( vsg_hours_places()[ $slug ] ) ) ? $slug : '';
 }
 
@@ -90,12 +117,12 @@ function vsg_hours_url( $page_id = 0 ) {
 }
 
 /** Bouton « Horaires » vers la page des horaires du lieu. */
-function vsg_messes_button( $page_id, $class = 'btn' ) {
+function vsg_messes_button( $page_id, $css_class = 'btn' ) {
 	$url = vsg_hours_url( $page_id );
 	if ( ! $url ) {
 		$url = vsg_page_url( 'horaires-des-messes' );
 	}
-	return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( $url ) . '">Horaires</a>';
+	return '<a class="' . esc_attr( $css_class ) . '" href="' . esc_url( $url ) . '">Horaires</a>';
 }
 
 /** Bloc « Rencontrer un prêtre ». */
@@ -109,7 +136,7 @@ function vsg_priest_block( $parish_id = 0 ) {
 		<?php if ( $tel ) : ?><p>Par téléphone à l'accueil : <strong><?php echo esc_html( $tel ); ?></strong></p><?php endif; ?>
 		<p><a class="btn" href="<?php echo esc_url( add_query_arg( 'objet', 'pretre', vsg_page_url( 'contact' ) ) . '#contact-form' ); ?>">Demander un rendez-vous</a></p>
 	</div>
-	<?php echo vsg_cure_contact_block(); // phpcs:ignore ?>
+	<?php echo vsg_cure_contact_block(); ?>
 	<?php
 	return ob_get_clean();
 }
@@ -123,7 +150,7 @@ function vsg_cure_contact_block() {
 	if ( ! $tel && ! $mail ) {
 		return '';
 	}
-	$h = '<div class="infocard infocard--soft curecontact"><h2>Joindre directement le curé</h2>';
+	$h  = '<div class="infocard infocard--soft curecontact"><h2>Joindre directement le curé</h2>';
 	$h .= '<p>Pour ce type de demande, vous pouvez aussi contacter ' . ( $nom ? 'le ' . esc_html( preg_replace( '/,.*$/', '', $nom ) ) : 'le curé' ) . ' :</p><ul class="plainlist">';
 	if ( $tel ) {
 		$h .= '<li><a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $tel ) ) . '">' . esc_html( $tel ) . '</a></li>';

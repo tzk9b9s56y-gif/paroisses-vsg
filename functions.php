@@ -6,30 +6,38 @@
  * paroissiales et le formulaire de contact sont gérés ici.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 define( 'VSG_VERSION', wp_get_theme( get_template() )->get( 'Version' ) ); // une seule source : style.css
 define( 'VSG_DIR', get_template_directory() );
 define( 'VSG_URI', get_template_directory_uri() );
 
+/* Socle : fonctions utilitaires, journal, sécurité. */
 require VSG_DIR . '/inc/helpers.php';
+require VSG_DIR . '/inc/journal.php';
 require VSG_DIR . '/inc/securite.php';
 require VSG_DIR . '/inc/htaccess.php';
 require VSG_DIR . '/inc/seo.php';
+require VSG_DIR . '/inc/mail.php';
+require VSG_DIR . '/inc/maintenance.php';
+
+/* Contenus : types de contenu, champs de saisie, liens, import. */
 require VSG_DIR . '/inc/content-types.php';
 require VSG_DIR . '/inc/meta-boxes.php';
+require VSG_DIR . '/inc/liens.php';
+require VSG_DIR . '/inc/import.php';
+
+/* Formulaires publics et paiement en ligne. */
+require VSG_DIR . '/inc/formulaires.php';
+require VSG_DIR . '/inc/sumup.php';
 require VSG_DIR . '/inc/contact.php';
 require VSG_DIR . '/inc/intentions.php';
-require VSG_DIR . '/inc/admin.php';
-require VSG_DIR . '/inc/import.php';
 require VSG_DIR . '/inc/dons.php';
 require VSG_DIR . '/inc/messes.php';
-require VSG_DIR . '/inc/liens.php';
-require VSG_DIR . '/inc/maintenance.php';
+
+/* Administration et mises à jour. */
+require VSG_DIR . '/inc/admin.php';
 require VSG_DIR . '/inc/a-completer.php';
-require VSG_DIR . '/inc/mail.php';
 require VSG_DIR . '/inc/updater.php';
 require VSG_DIR . '/inc/auto-update.php';
 require VSG_DIR . '/inc/upgrade.php';
@@ -63,7 +71,16 @@ add_action(
 	'wp_enqueue_scripts',
 	function () {
 		wp_enqueue_style( 'vsg', VSG_URI . '/style.css', array(), VSG_VERSION );
-		wp_enqueue_script( 'vsg', VSG_URI . '/assets/js/site.js', array(), VSG_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
+		wp_enqueue_script(
+			'vsg',
+			VSG_URI . '/assets/js/site.js',
+			array(),
+			VSG_VERSION,
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
 	}
 );
 

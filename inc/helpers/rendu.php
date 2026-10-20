@@ -16,14 +16,14 @@ function vsg_tile_text( $page ) {
 		return $page->post_excerpt;
 	}
 	$map = array(
-		'templates/actualites.php'  => 'Rendez-vous et nouvelles de la paroisse',
-		'templates/feuille.php'     => 'La feuille de la semaine en PDF',
-		'templates/infos.php'       => 'Accueil, contact, plans d\'accès',
-		'templates/sacrements.php'  => 'Baptême, mariage, funérailles…',
-		'templates/galerie.php'     => 'Photos des événements',
-		VSG_TPL_COMMUNAUTES         => 'Qui ils sont, quand les rejoindre',
-		'templates/histoire.php'    => 'Les origines, les lieux de culte',
-		'templates/chapelles.php'   => 'Saint-Louis et Saint-Joseph : horaires, accès, histoire',
+		'templates/actualites.php' => 'Rendez-vous et nouvelles de la paroisse',
+		'templates/feuille.php'    => 'La feuille de la semaine en PDF',
+		'templates/infos.php'      => 'Accueil, contact, plans d\'accès',
+		'templates/sacrements.php' => 'Baptême, mariage, funérailles…',
+		'templates/galerie.php'    => 'Photos des événements',
+		VSG_TPL_COMMUNAUTES        => 'Qui ils sont, quand les rejoindre',
+		'templates/histoire.php'   => 'Les origines, les lieux de culte',
+		'templates/chapelles.php'  => 'Saint-Louis et Saint-Joseph : horaires, accès, histoire',
 	);
 	$tpl = get_page_template_slug( $page );
 	if ( isset( $map[ $tpl ] ) ) {
@@ -42,7 +42,7 @@ function vsg_tile_text( $page ) {
  */
 function vsg_gallery_items( $parish ) {
 	static $cache = array();
-	$key = $parish ? $parish->ID : 0;
+	$key          = $parish ? $parish->ID : 0;
 	if ( isset( $cache[ $key ] ) ) {
 		return $cache[ $key ];
 	}
@@ -135,14 +135,22 @@ function vsg_event( $post, $variant = 'card', $show_place = true ) {
 		$style = vsg_accent_attr( $post );
 		$meta  = array( $heure, $lieu, ( $type && 'row' === $variant ) ? $type['label'] : '' );
 	}
-	$meta  = array_filter( $meta );
-	$when  = trim( vsg_date_long( $date ) . ( $heure ? ', ' . $heure : '' ) );
-	$img   = ( 'card' === $variant && has_post_thumbnail( $post ) ) ? get_the_post_thumbnail( $post, 'medium_large', array( 'class' => 'event__img', 'alt' => vsg_poster_alt( $post ), 'loading' => 'eager' ) ) : '';
+	$meta = array_filter( $meta );
+	$when = trim( vsg_date_long( $date ) . ( $heure ? ', ' . $heure : '' ) );
+	$img  = ( 'card' === $variant && has_post_thumbnail( $post ) ) ? get_the_post_thumbnail(
+		$post,
+		'medium_large',
+		array(
+			'class'   => 'event__img',
+			'alt'     => vsg_poster_alt( $post ),
+			'loading' => 'eager',
+		)
+	) : '';
 	ob_start();
 	?>
-	<a class="event event--<?php echo esc_attr( $variant ); ?><?php echo $img ? ' event--img' : ''; ?>" href="<?php echo esc_url( get_permalink( $post ) ); ?>"<?php echo $style; // phpcs:ignore ?>>
-		<?php echo $img; // phpcs:ignore ?>
-		<?php echo vsg_date_badge( $date ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+	<a class="event event--<?php echo esc_attr( $variant ); ?><?php echo $img ? ' event--img' : ''; ?>" href="<?php echo esc_url( get_permalink( $post ) ); ?>"<?php echo $style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribut construit avec esc_attr(). ?>>
+		<?php echo $img; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML de get_the_post_thumbnail(). ?>
+		<?php echo vsg_date_badge( $date ); ?>
 		<span class="event__body">
 			<?php if ( $chip ) : ?><span class="chip<?php echo $group ? ' chip--group' : ''; ?>"><?php echo esc_html( $chip ); ?></span><?php endif; ?>
 			<?php if ( 'private' === $post->post_status ) : ?><span class="chip chip--private">Interne</span><?php endif; ?>
@@ -159,8 +167,8 @@ function vsg_news_card( $post, $show_place = true, $show_date = false ) {
 	ob_start();
 	?>
 	<?php $wide = vsg_thumb_is_wide( $post ); ?>
-	<a class="card" href="<?php echo esc_url( get_permalink( $post ) ); ?>"<?php echo vsg_accent_attr( $post ); // phpcs:ignore ?>>
-		<span class="card__media<?php echo $wide ? ' card__media--wide' : ''; ?>"><?php echo vsg_thumb( $post, $wide ? 'large' : 'vsg-card' ); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+	<a class="card" href="<?php echo esc_url( get_permalink( $post ) ); ?>"<?php echo vsg_accent_attr( $post ); ?>>
+		<span class="card__media<?php echo $wide ? ' card__media--wide' : ''; ?>"><?php echo vsg_thumb( $post, $wide ? 'large' : 'vsg-card' ); ?></span>
 		<span class="card__body">
 			<?php if ( $show_place && vsg_place_label( $post ) ) : ?><span class="chip"><?php echo esc_html( vsg_place_label( $post ) ); ?></span><?php endif; ?>
 			<?php if ( $show_date ) : ?><span class="card__date"><?php echo esc_html( vsg_post_date( $post ) ); ?></span><?php endif; ?>
@@ -173,7 +181,8 @@ function vsg_news_card( $post, $show_place = true, $show_date = false ) {
 }
 
 function vsg_section_head( $title, $link_url = '', $link_label = '', $tag = 'h2' ) {
-	echo '<div class="sectionhead"><' . $tag . '>' . esc_html( $title ) . '</' . $tag . '>'; // phpcs:ignore
+	$tag = in_array( $tag, array( 'h1', 'h2', 'h3' ), true ) ? $tag : 'h2';
+	echo '<div class="sectionhead"><' . esc_html( $tag ) . '>' . esc_html( $title ) . '</' . esc_html( $tag ) . '>';
 	if ( $link_url ) {
 		echo '<a href="' . esc_url( $link_url ) . '">' . esc_html( $link_label ) . '</a>';
 	}
@@ -186,7 +195,14 @@ function vsg_empty( $text ) {
 
 /** Bandeau d'une paroisse avec ses onglets. */
 function vsg_parish_band( $parish, $current = null ) {
-	get_template_part( 'template-parts/parish-band', null, array( 'parish' => $parish, 'current' => $current ) );
+	get_template_part(
+		'template-parts/parish-band',
+		null,
+		array(
+			'parish'  => $parish,
+			'current' => $current,
+		)
+	);
 }
 
 function vsg_nl2br( $text ) {

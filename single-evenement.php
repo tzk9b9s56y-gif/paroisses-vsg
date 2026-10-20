@@ -22,16 +22,17 @@ $parts = vsg_date_parts( $date );
 		<?php if ( $group ) : ?>
 			<p class="postmeta" style="--accent:<?php echo esc_attr( $group['color'] ); ?>"><span class="chip chip--group"><?php echo esc_html( $group['label'] ); ?></span></p>
 		<?php else : ?>
-			<p class="postmeta"><?php if ( vsg_place_label( get_post() ) ) : ?><span class="chip"><?php echo esc_html( vsg_place_label( get_post() ) ); ?></span><?php endif; ?></p>
+			<p class="postmeta">
+			<?php if ( vsg_place_label( get_post() ) ) : ?><span class="chip"><?php echo esc_html( vsg_place_label( get_post() ) ); ?></span><?php endif; ?></p>
 		<?php endif; ?>
 		<h1><?php the_title(); ?></h1>
 		<div class="eventfacts">
-			<?php echo vsg_date_badge( $date ); // phpcs:ignore ?>
+			<?php echo vsg_date_badge( $date ); ?>
 			<div>
 				<p class="eventfacts__when"><?php echo esc_html( ucfirst( vsg_date_long( $date ) ) . ( $parts ? ' ' . $parts['year'] : '' ) . ( $heure ? ' à ' . $heure : '' ) ); ?></p>
 				<p class="muted"><?php echo esc_html( implode( ' · ', $group ? vsg_event_where( get_post() ) : array_filter( array( vsg_place_label( get_post() ), $lieu ) ) ) ); ?></p>
 				<?php if ( $group ) : ?>
-					<p class="muted">Proposé par : <?php echo $group['url'] ? '<a href="' . esc_url( $group['url'] ) . '">' . esc_html( $group['label'] ) . '</a>' : esc_html( $group['label'] ); // phpcs:ignore ?></p>
+					<p class="muted">Proposé par : <?php echo $group['url'] ? '<a href="' . esc_url( $group['url'] ) . '">' . esc_html( $group['label'] ) . '</a>' : esc_html( $group['label'] ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>

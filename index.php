@@ -15,7 +15,7 @@ get_header();
 				<?php
 				while ( have_posts() ) {
 					the_post();
-					echo vsg_news_card( get_post(), true, true ); // phpcs:ignore
+					echo vsg_news_card( get_post(), true, true );
 				}
 				?>
 			</div>

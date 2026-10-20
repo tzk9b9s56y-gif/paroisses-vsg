@@ -19,16 +19,17 @@ if ( $parish ) {
 			<div class="grid grid--2">
 				<div class="infocard infocard--soft">
 					<h2>Horaires</h2>
-					<?php echo vsg_hours_block( $parish->ID, 'Église ' . get_the_title( $parish ), true ); // phpcs:ignore ?>
+					<?php echo vsg_hours_block( $parish->ID, 'Église ' . get_the_title( $parish ), true ); ?>
 					<?php foreach ( vsg_chapels( $parish->ID ) as $c ) : ?>
-						<?php echo vsg_hours_block( $c->ID, get_the_title( $c ), true ); // phpcs:ignore ?>
+						<?php echo vsg_hours_block( $c->ID, get_the_title( $c ), true ); ?>
 					<?php endforeach; ?>
 				</div>
 				<div class="infocard infocard--soft">
 					<h2>Accueil et secrétariat</h2>
-					<p><?php echo esc_html( vsg_meta( $parish->ID, 'adresse' ) ); ?> <?php echo vsg_itineraire( vsg_meta( $parish->ID, 'adresse' ), 'l\'accueil' ); // phpcs:ignore ?></p>
-					<p><?php echo vsg_nl2br( vsg_meta( $parish->ID, 'permanences' ) ); // phpcs:ignore ?></p>
-					<p><?php echo esc_html( vsg_meta( $parish->ID, 'telephone' ) ); ?><?php if ( vsg_meta( $parish->ID, 'email' ) ) : ?> · <?php echo vsg_mailto( vsg_meta( $parish->ID, 'email' ) ); // phpcs:ignore ?><?php endif; ?></p>
+					<p><?php echo esc_html( vsg_meta( $parish->ID, 'adresse' ) ); ?> <?php echo vsg_itineraire( vsg_meta( $parish->ID, 'adresse' ), 'l\'accueil' ); ?></p>
+					<p><?php echo vsg_nl2br( vsg_meta( $parish->ID, 'permanences' ) ); ?></p>
+					<p><?php echo esc_html( vsg_meta( $parish->ID, 'telephone' ) ); ?>
+					<?php if ( vsg_meta( $parish->ID, 'email' ) ) : ?>· <?php echo vsg_mailto( vsg_meta( $parish->ID, 'email' ) ); ?><?php endif; ?></p>
 				</div>
 			</div>
 		<?php endif; ?>
@@ -37,7 +38,7 @@ if ( $parish ) {
 
 <?php if ( $parish ) : ?>
 <section class="band band--tight">
-	<div class="wrap narrow"><?php echo vsg_priest_block( $parish->ID ); // phpcs:ignore ?></div>
+	<div class="wrap narrow"><?php echo vsg_priest_block( $parish->ID ); ?></div>
 </section>
 <?php endif; ?>
 
@@ -63,7 +64,7 @@ if ( $parish ) {
 					<h3><?php echo esc_html( $l[0] ); ?></h3>
 					<p><?php echo esc_html( $l[1] ); ?></p>
 					<?php if ( $l[2] ) : ?><p class="muted"><?php echo esc_html( $l[2] ); ?></p><?php endif; ?>
-					<p><?php echo vsg_itineraire( $l[1], $l[0], 'btn btn--ghost btn--sm' ); // phpcs:ignore ?></p>
+					<p><?php echo vsg_itineraire( $l[1], $l[0], 'btn btn--ghost btn--sm' ); ?></p>
 				</div>
 			<?php endforeach; ?>
 		</div>
@@ -74,7 +75,7 @@ if ( $parish ) {
 	<div class="wrap narrow">
 		<h2>Écrire à la paroisse</h2>
 		<p class="muted">Pour une demande de sacrement, merci de passer par l'accueil ou par téléphone.</p>
-		<?php echo vsg_contact_form( $parish->ID ); // phpcs:ignore ?>
+		<?php echo vsg_contact_form( $parish->ID ); ?>
 	</div>
 </section>
 <?php endif; ?>

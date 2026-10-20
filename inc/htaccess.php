@@ -8,9 +8,7 @@
  * Après écriture, le site vérifie que l'accueil répond toujours ; sinon les règles sont retirées.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 function vsg_htaccess_rules() {
 	return array(
@@ -29,7 +27,13 @@ function vsg_htaccess_rules() {
  * @return bool|null true = oui, false = non, null = impossible à vérifier (requête bloquée).
  */
 function vsg_site_responds() {
-	$res = wp_remote_get( add_query_arg( 'vsg-sante', time(), home_url( '/' ) ), array( 'timeout' => 20, 'redirection' => 2 ) );
+	$res = wp_remote_get(
+		add_query_arg( 'vsg-sante', time(), home_url( '/' ) ),
+		array(
+			'timeout'     => 20,
+			'redirection' => 2,
+		)
+	);
 	if ( is_wp_error( $res ) ) {
 		return null;
 	}
@@ -67,7 +71,5 @@ function vsg_htaccess_write() {
 }
 
 function vsg_htaccess_log( $msg ) {
-	if ( function_exists( 'vsg_au_log' ) ) {
-		vsg_au_log( 'serveur', $msg );
-	}
+	vsg_journal( 'serveur', $msg );
 }

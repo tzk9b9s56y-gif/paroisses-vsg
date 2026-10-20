@@ -11,20 +11,38 @@ function vsg_parishes() {
 	if ( null === $cache ) {
 		$cache = get_pages(
 			array(
-				'meta_key'    => '_wp_page_template',
-				'meta_value'  => VSG_TPL_PAROISSE,
-				'sort_column' => 'menu_order',
-				'hierarchical'=> 0,
+				'meta_key'     => '_wp_page_template',
+				'meta_value'   => VSG_TPL_PAROISSE,
+				'sort_column'  => 'menu_order',
+				'hierarchical' => 0,
 			)
 		);
 	}
 	return $cache;
 }
 
+/** Noms des chapelles sans le mot « Chapelle », reliés par « et ». */
+function vsg_chapel_names( $chapels ) {
+	return implode(
+		' et ',
+		array_map(
+			function ( $c ) {
+				return trim( preg_replace( '/^Chapelle\s+/u', '', get_the_title( $c ) ) );
+			},
+			$chapels
+		)
+	);
+}
+
 /** Chapelles d'une paroisse (pages enfants avec le modèle « chapelle »). */
 function vsg_chapels( $parish_id ) {
 	$out = array();
-	foreach ( get_pages( array( 'parent' => $parish_id, 'sort_column' => 'menu_order' ) ) as $p ) {
+	foreach ( get_pages(
+		array(
+			'parent'      => $parish_id,
+			'sort_column' => 'menu_order',
+		)
+	) as $p ) {
 		if ( VSG_TPL_CHAPELLE === get_page_template_slug( $p ) ) {
 			$out[] = $p;
 		}
@@ -120,7 +138,7 @@ function vsg_place_label( $post ) {
 /** Page d'un modèle donné à l'intérieur d'une paroisse. */
 function vsg_parish_child_by_template( $parish_id, $template ) {
 	foreach ( get_pages( array( 'parent' => $parish_id ) ) as $p ) {
-		if ( $template === get_page_template_slug( $p ) ) {
+		if ( get_page_template_slug( $p ) === $template ) {
 			return $p;
 		}
 	}
@@ -189,9 +207,9 @@ function vsg_maps_url( $address ) {
 }
 
 /** Lien « Itinéraire » vers Google Maps, avec une petite épingle. */
-function vsg_itineraire( $address, $place = '', $class = 'maplink' ) {
+function vsg_itineraire( $address, $place = '', $css_class = 'maplink' ) {
 	if ( ! $address ) {
 		return '';
 	}
-	return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( vsg_maps_url( $address ) ) . '" target="_blank" rel="noopener"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>Itinéraire<span class="sr-only">' . ( $place ? ' vers ' . esc_html( $place ) : '' ) . ' (Google Maps, nouvel onglet)</span></a>';
+	return '<a class="' . esc_attr( $css_class ) . '" href="' . esc_url( vsg_maps_url( $address ) ) . '" target="_blank" rel="noopener"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>Itinéraire<span class="sr-only">' . ( $place ? ' vers ' . esc_html( $place ) : '' ) . ' (Google Maps, nouvel onglet)</span></a>';
 }

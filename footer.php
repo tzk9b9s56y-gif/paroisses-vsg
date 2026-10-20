@@ -24,7 +24,7 @@
 				<h2>Paroisse <?php echo esc_html( get_the_title( $p ) ); ?></h2>
 				<?php if ( vsg_meta( $p->ID, 'adresse' ) ) : ?><p><?php echo esc_html( vsg_meta( $p->ID, 'adresse' ) ); ?></p><?php endif; ?>
 				<?php if ( vsg_meta( $p->ID, 'telephone' ) ) : ?><p><?php echo esc_html( vsg_meta( $p->ID, 'telephone' ) ); ?></p><?php endif; ?>
-				<?php if ( vsg_meta( $p->ID, 'email' ) ) : ?><p><?php echo vsg_mailto( vsg_meta( $p->ID, 'email' ) ); // phpcs:ignore ?></p><?php endif; ?>
+				<?php if ( vsg_meta( $p->ID, 'email' ) ) : ?><p><?php echo vsg_mailto( vsg_meta( $p->ID, 'email' ) ); ?></p><?php endif; ?>
 				<?php
 				$chapels = vsg_chapels( $p->ID );
 				if ( $chapels ) :
@@ -42,7 +42,7 @@
 			<p><a href="<?php echo esc_url( vsg_page_url( 'mentions-legales' ) ); ?>">Mentions légales et données personnelles</a></p>
 			<?php if ( vsg_liens_html() ) : ?>
 				<h2 class="sitefooter__sub">Liens utiles</h2>
-				<?php echo vsg_liens_html(); // phpcs:ignore ?>
+				<?php echo vsg_liens_html(); ?>
 			<?php endif; ?>
 		</div>
 	</div>

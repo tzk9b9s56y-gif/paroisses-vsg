@@ -44,7 +44,7 @@ if ( $others->have_posts() ) :
 			<div class="grid grid--3">
 				<?php
 				foreach ( $others->posts as $n ) {
-					echo vsg_news_card( $n, true ); // phpcs:ignore
+					echo vsg_news_card( $n, true );
 				}
 				?>
 			</div>

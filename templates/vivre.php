@@ -10,9 +10,9 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 the_post();
 
-$all_comm = vsg_communities_page();
+$all_comm   = vsg_communities_page();
 $common_sac = get_page_by_path( 'sacrements' );
-$items = array(
+$items      = array(
 	array( 'Demander le baptême', $common_sac ? get_permalink( $common_sac ) : '', 'Pour un bébé, un enfant ou un adulte' ),
 	array( 'Se marier à l\'église', $common_sac ? get_permalink( $common_sac ) : '', 'Prendre contact au moins un an avant' ),
 	array( 'Organiser des funérailles', $common_sac ? get_permalink( $common_sac ) : '', 'Accompagner un défunt et sa famille' ),
@@ -38,7 +38,7 @@ $items = array(
 			<?php
 			foreach ( $items as $it ) {
 				if ( $it[1] ) {
-					echo vsg_tile( $it[0], $it[1], $it[2] ); // phpcs:ignore
+					echo vsg_tile( $it[0], $it[1], $it[2] );
 				}
 			}
 			?>

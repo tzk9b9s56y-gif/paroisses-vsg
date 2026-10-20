@@ -11,7 +11,12 @@ $parish = vsg_context_parish();
 if ( $parish ) {
 	vsg_parish_band( $parish, get_post() );
 }
-$children = get_pages( array( 'parent' => get_the_ID(), 'sort_column' => 'menu_order' ) );
+$children = get_pages(
+	array(
+		'parent'      => get_the_ID(),
+		'sort_column' => 'menu_order',
+	)
+);
 $infos    = $parish ? vsg_parish_child_by_template( $parish->ID, 'templates/infos.php' ) : null;
 ?>
 <section class="band">

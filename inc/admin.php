@@ -3,9 +3,7 @@
  * Administration simplifiée : un tableau de bord avec les actions courantes.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 add_action(
 	'wp_dashboard_setup',
@@ -21,12 +19,20 @@ add_action(
 );
 
 function vsg_dashboard_actions() {
-	$feuilles = vsg_feuilles_query( array_filter( array_map( function ( $p ) {
-		$t = vsg_page_term( $p->ID );
-		return $t ? $t->term_id : 0;
-	}, vsg_parishes() ) ), 1 );
-	$last = $feuilles->have_posts() ? $feuilles->posts[0] : null;
-	$actions = array(
+	$feuilles = vsg_feuilles_query(
+		array_filter(
+			array_map(
+				function ( $p ) {
+					$t = vsg_page_term( $p->ID );
+					return $t ? $t->term_id : 0;
+				},
+				vsg_parishes()
+			)
+		),
+		1
+	);
+	$last     = $feuilles->have_posts() ? $feuilles->posts[0] : null;
+	$actions  = array(
 		array( 'Publier une actualité', admin_url( 'post-new.php' ), 'Annonce, compte rendu, photos.' ),
 		array( 'Ajouter un rendez-vous', admin_url( 'post-new.php?post_type=evenement' ), 'Il apparaîtra dans l\'agenda à la bonne date.' ),
 		array( 'Déposer la feuille paroissiale', admin_url( 'post-new.php?post_type=feuille' ), 'Un PDF par paroisse et par semaine.' ),
@@ -75,7 +81,7 @@ function vsg_admin_parish_cell( $col, $post_id ) {
 	$place  = vsg_place_label( $post_id );
 	if ( $parish ) {
 		echo '<strong style="color:' . esc_attr( vsg_parish_color( $parish ) ) . '">' . esc_html( get_the_title( $parish ) ) . '</strong>';
-		if ( $place && $place !== get_the_title( $parish ) ) {
+		if ( $place && get_the_title( $parish ) !== $place ) {
 			echo '<br><span class="vsg-muted">' . esc_html( $place ) . '</span>';
 		}
 	} elseif ( $place ) {
@@ -102,7 +108,7 @@ add_action(
 		if ( ! in_array( $post_type, vsg_admin_list_types(), true ) ) {
 			return;
 		}
-		$cur = isset( $_GET['vsg_paroisse'] ) ? sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$cur = isset( $_GET['vsg_paroisse'] ) ? sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre de la liste des rendez-vous.
 		echo '<label class="screen-reader-text" for="vsg_paroisse">Filtrer par paroisse</label><select name="vsg_paroisse" id="vsg_paroisse">';
 		echo '<option value="">Toutes les paroisses</option>';
 		foreach ( vsg_parishes() as $p ) {
@@ -118,13 +124,13 @@ add_action(
 add_action(
 	'pre_get_posts',
 	function ( $q ) {
-		if ( ! is_admin() || ! $q->is_main_query() || empty( $_GET['vsg_paroisse'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! is_admin() || ! $q->is_main_query() || empty( $_GET['vsg_paroisse'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre de la liste des rendez-vous.
 			return;
 		}
 		if ( ! in_array( $q->get( 'post_type' ) ? $q->get( 'post_type' ) : 'post', vsg_admin_list_types(), true ) ) {
 			return;
 		}
-		$val  = sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$val  = sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ); // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre de la liste des rendez-vous.
 		$term = 'commun' === $val ? vsg_common_term() : vsg_page_term( (int) $val );
 		if ( ! $term ) {
 			return;
@@ -214,7 +220,7 @@ add_filter(
 add_action(
 	'enqueue_block_editor_assets',
 	function () {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		$screen = get_current_screen();
 		if ( ! $screen || ! in_array( $screen->post_type, vsg_admin_list_types(), true ) ) {
 			return;
 		}

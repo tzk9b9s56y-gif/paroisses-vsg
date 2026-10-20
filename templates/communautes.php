@@ -19,7 +19,10 @@ if ( $parish ) {
 	<div class="wrap">
 		<h1><?php echo esc_html( get_the_title() ); ?></h1>
 		<?php if ( trim( get_the_content() ) ) : ?><div class="prose lead"><?php the_content(); ?></div><?php endif; ?>
-		<?php if ( ! $parish ) { vsg_communities_menu(); } ?>
+		<?php
+		if ( ! $parish ) {
+			vsg_communities_menu(); }
+		?>
 	</div>
 </section>
 
@@ -31,7 +34,7 @@ if ( $parish ) {
 			if ( $list ) {
 				echo '<div class="grid grid--3">';
 				foreach ( $list as $c ) {
-					echo vsg_community_card( $c, false ); // phpcs:ignore
+					echo vsg_community_card( $c, false );
 				}
 				echo '</div>';
 			} else {
@@ -49,7 +52,7 @@ if ( $parish ) {
 	$shown  = 0;
 	$common = vsg_communities_common();
 	if ( $common ) :
-		$shown++;
+		++$shown;
 		?>
 		<section class="band band--tight">
 			<div class="wrap">
@@ -57,7 +60,7 @@ if ( $parish ) {
 				vsg_section_head( 'Pour les deux paroisses' );
 				echo '<div class="grid grid--3">';
 				foreach ( $common as $c ) {
-					echo vsg_community_card( $c, false ); // phpcs:ignore
+					echo vsg_community_card( $c, false );
 				}
 				echo '</div>';
 				?>
@@ -70,7 +73,7 @@ if ( $parish ) {
 		if ( ! $list ) {
 			continue;
 		}
-		$shown++;
+		++$shown;
 		?>
 		<section class="band band--tight">
 			<div class="wrap">
@@ -78,7 +81,7 @@ if ( $parish ) {
 				vsg_section_head( 'Paroisse ' . get_the_title( $p ), get_permalink( $p ), 'Voir la paroisse' );
 				echo '<div class="grid grid--3">';
 				foreach ( $list as $c ) {
-					echo vsg_community_card( $c, false ); // phpcs:ignore
+					echo vsg_community_card( $c, false );
 				}
 				echo '</div>';
 				?>

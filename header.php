@@ -5,18 +5,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$context = is_singular() ? vsg_context_parish() : null;
-$common  = array(
+$context        = is_singular() ? vsg_context_parish() : null;
+$common         = array(
 	'horaires-des-messes' => 'Horaires',
-	'agenda'   => 'Agenda',
-	'vivre-en-eglise' => 'Vivre en Église',
-	'communautes' => 'Groupes et communautés',
-	'prier'    => 'Textes du jour et vie des saints',
+	'agenda'              => 'Agenda',
+	'vivre-en-eglise'     => 'Vivre en Église',
+	'communautes'         => 'Groupes et communautés',
+	'prier'               => 'Textes du jour et vie des saints',
 	'intention-de-priere' => 'Intention de prière',
-	'demande-de-messe' => 'Demander une messe',
-	'contact'  => 'Contact',
+	'demande-de-messe'    => 'Demander une messe',
+	'contact'             => 'Contact',
 );
-$long = array( 'intention-de-priere' => 'Déposer une intention de prière' );
+$long           = array( 'intention-de-priere' => 'Déposer une intention de prière' );
 $current_common = '';
 foreach ( array_keys( $common ) as $slug ) {
 	if ( is_page( $slug ) ) {
@@ -42,7 +42,15 @@ if ( is_singular( 'evenement' ) && ! $context ) {
 			<?php
 			$logo_id = get_theme_mod( 'custom_logo' );
 			if ( $logo_id ) {
-				echo wp_get_attachment_image( $logo_id, 'thumbnail', false, array( 'class' => 'brand__logo', 'alt' => '' ) );
+				echo wp_get_attachment_image(
+					$logo_id,
+					'thumbnail',
+					false,
+					array(
+						'class' => 'brand__logo',
+						'alt'   => '',
+					)
+				);
 			} else {
 				echo '<img class="brand__logo brand__logo--mark" src="' . esc_url( VSG_URI . '/assets/img/logo-mark.svg' ) . '" alt="" width="64" height="56">';
 			}
@@ -79,16 +87,20 @@ if ( is_singular( 'evenement' ) && ! $context ) {
 		$theme_img = $home_id ? vsg_meta( $home_id, 'theme_image' ) : '';
 		$theme_url = $home_id ? vsg_meta( $home_id, 'theme_lien' ) : '';
 		if ( is_front_page() && ( $theme_t || $theme_img ) ) :
-			$tag = $theme_url ? 'a' : 'div';
+			$theme_class = 'yeartheme' . ( $theme_img ? ' yeartheme--img' : '' );
 			?>
-			<<?php echo $tag; ?> class="yeartheme<?php echo $theme_img ? ' yeartheme--img' : ''; ?>"<?php echo $theme_url ? ' href="' . esc_url( $theme_url ) . '"' : ''; ?> title="Thème de l'année">
+			<?php if ( $theme_url ) : ?>
+			<a class="<?php echo esc_attr( $theme_class ); ?>" href="<?php echo esc_url( $theme_url ); ?>" title="Thème de l'année">
+			<?php else : ?>
+			<div class="<?php echo esc_attr( $theme_class ); ?>" title="Thème de l'année">
+			<?php endif; ?>
 				<?php if ( $theme_img ) : ?>
 					<img src="<?php echo esc_url( $theme_img ); ?>" alt="<?php echo esc_attr( $theme_t ? 'Thème de l\'année : ' . $theme_t : 'Thème de l\'année' ); ?>">
 				<?php else : ?>
 					<span class="yeartheme__kicker">Thème de l'année</span>
 					<span class="yeartheme__title"><?php echo esc_html( $theme_t ); ?></span>
 				<?php endif; ?>
-			</<?php echo $tag; ?>>
+			<?php echo $theme_url ? '</a>' : '</div>'; ?>
 		<?php endif; ?>
 		<?php if ( vsg_parishes() && is_front_page() ) : ?>
 			<nav class="parishnav" aria-label="Nos paroisses">

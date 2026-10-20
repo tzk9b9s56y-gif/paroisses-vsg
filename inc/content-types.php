@@ -4,9 +4,7 @@
  * Ils utilisent les catégories (une par paroisse et par chapelle).
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 add_action(
 	'init',
@@ -14,7 +12,7 @@ add_action(
 		register_post_type(
 			'evenement',
 			array(
-				'labels'       => array(
+				'labels'        => array(
 					'name'               => 'Agenda',
 					'singular_name'      => 'Rendez-vous',
 					'menu_name'          => 'Agenda',
@@ -28,21 +26,21 @@ add_action(
 					'not_found_in_trash' => 'Aucun rendez-vous dans la corbeille',
 					'all_items'          => 'Tous les rendez-vous',
 				),
-				'public'       => true,
-				'show_in_rest' => true,
-				'menu_icon'    => 'dashicons-calendar-alt',
-				'menu_position'=> 5,
-				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
-				'taxonomies'   => array( 'category' ),
-				'has_archive'  => false,
-				'rewrite'      => array( 'slug' => 'rendez-vous' ),
+				'public'        => true,
+				'show_in_rest'  => true,
+				'menu_icon'     => 'dashicons-calendar-alt',
+				'menu_position' => 5,
+				'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
+				'taxonomies'    => array( 'category' ),
+				'has_archive'   => false,
+				'rewrite'       => array( 'slug' => 'rendez-vous' ),
 			)
 		);
 
 		register_post_type(
 			'feuille',
 			array(
-				'labels'       => array(
+				'labels'        => array(
 					'name'               => 'Feuilles paroissiales',
 					'singular_name'      => 'Feuille paroissiale',
 					'menu_name'          => 'Feuilles paroissiales',
@@ -55,16 +53,24 @@ add_action(
 					'not_found_in_trash' => 'Aucune feuille dans la corbeille',
 					'all_items'          => 'Toutes les feuilles',
 				),
-				'public'       => true,
-				'show_in_rest' => true,
-				'menu_icon'    => 'dashicons-media-document',
-				'menu_position'=> 6,
-				'supports'     => array( 'title', 'editor' ),
-				'taxonomies'   => array( 'category' ),
-				'has_archive'  => false,
-				'rewrite'      => array( 'slug' => 'feuille' ),
+				'public'        => true,
+				'show_in_rest'  => true,
+				'menu_icon'     => 'dashicons-media-document',
+				'menu_position' => 6,
+				'supports'      => array( 'title', 'editor' ),
+				'taxonomies'    => array( 'category' ),
+				'has_archive'   => false,
+				'rewrite'       => array( 'slug' => 'feuille' ),
 				/* L'éditeur s'ouvre avec un bloc « Fichier » prêt à recevoir le PDF. */
-				'template'     => array( array( 'core/file', array( 'displayPreview' => false, 'downloadButtonText' => 'Télécharger' ) ) ),
+				'template'      => array(
+					array(
+						'core/file',
+						array(
+							'displayPreview'     => false,
+							'downloadButtonText' => 'Télécharger',
+						),
+					),
+				),
 			)
 		);
 	}
@@ -76,15 +82,15 @@ add_action(
 	function () {
 		global $wp_post_types, $wp_taxonomies;
 		if ( isset( $wp_post_types['post'] ) ) {
-			$l                     = $wp_post_types['post']->labels;
-			$l->name               = 'Actualités';
-			$l->menu_name          = 'Actualités';
-			$l->singular_name      = 'Actualité';
-			$l->add_new            = 'Publier une actualité';
-			$l->add_new_item       = 'Publier une actualité';
-			$l->all_items          = 'Toutes les actualités';
-			$l->edit_item          = 'Modifier l\'actualité';
-			$l->name_admin_bar     = 'Actualité';
+			$l                 = $wp_post_types['post']->labels;
+			$l->name           = 'Actualités';
+			$l->menu_name      = 'Actualités';
+			$l->singular_name  = 'Actualité';
+			$l->add_new        = 'Publier une actualité';
+			$l->add_new_item   = 'Publier une actualité';
+			$l->all_items      = 'Toutes les actualités';
+			$l->edit_item      = 'Modifier l\'actualité';
+			$l->name_admin_bar = 'Actualité';
 		}
 		if ( isset( $wp_taxonomies['category'] ) ) {
 			$l                = $wp_taxonomies['category']->labels;

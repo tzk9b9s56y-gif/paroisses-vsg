@@ -9,7 +9,12 @@ defined( 'ABSPATH' ) || exit;
 
 get_header();
 the_post();
-$saints = get_pages( array( 'parent' => get_the_ID(), 'sort_column' => 'menu_order' ) );
+$saints = get_pages(
+	array(
+		'parent'      => get_the_ID(),
+		'sort_column' => 'menu_order',
+	)
+);
 ?>
 <section class="band band--soft band--tight">
 	<div class="wrap">
@@ -36,12 +41,12 @@ $saints = get_pages( array( 'parent' => get_the_ID(), 'sort_column' => 'menu_ord
 	<div class="wrap">
 		<?php if ( $saints ) : ?>
 			<div class="grid grid--3">
-				<?php foreach ( $saints as $s ) : ?>
-					<a class="card" href="<?php echo esc_url( get_permalink( $s ) ); ?>">
-						<span class="card__media card__media--top"><?php echo vsg_thumb( $s, 'large', 'Image' ); // phpcs:ignore ?></span>
+				<?php foreach ( $saints as $saint ) : ?>
+					<a class="card" href="<?php echo esc_url( get_permalink( $saint ) ); ?>">
+						<span class="card__media card__media--top"><?php echo vsg_thumb( $saint, 'large', 'Image' ); ?></span>
 						<span class="card__body">
-							<span class="card__title"><?php echo esc_html( get_the_title( $s ) ); ?></span>
-							<?php if ( $s->post_excerpt ) : ?><span class="card__text"><?php echo esc_html( $s->post_excerpt ); ?></span><?php endif; ?>
+							<span class="card__title"><?php echo esc_html( get_the_title( $saint ) ); ?></span>
+							<?php if ( $saint->post_excerpt ) : ?><span class="card__text"><?php echo esc_html( $saint->post_excerpt ); ?></span><?php endif; ?>
 							<span class="card__date">Sa vie, la vidéo, une prière</span>
 						</span>
 					</a>

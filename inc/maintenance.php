@@ -9,9 +9,7 @@
  * avec un rappel rouge dans la barre d'administration.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /** Message proposé par défaut. */
 function vsg_maint_default_message() {
@@ -148,7 +146,7 @@ add_filter(
 add_action(
 	'template_redirect',
 	function () {
-		$preview = isset( $_GET['vsg-maintenance'] ) && current_user_can( 'edit_theme_options' ); // phpcs:ignore WordPress.Security.NonceVerification
+		$preview = isset( $_GET['vsg-maintenance'] ) && current_user_can( 'edit_theme_options' ); // phpcs:ignore WordPress.Security.NonceVerification -- simple aperçu, réservé aux personnes autorisées.
 		if ( ! $preview && ( ! vsg_maint_is_on() || current_user_can( 'edit_posts' ) ) ) {
 			return;
 		}
@@ -167,14 +165,15 @@ function vsg_maint_render() {
 	$s     = vsg_maint_settings();
 	$lines = array_filter( array_map( 'trim', explode( "\n", $s['message'] ) ) );
 	add_filter( 'show_admin_bar', '__return_false' );
-	?><!doctype html>
+	?>
+	<!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Maintenance – <?php echo esc_html( get_bloginfo( 'name' ) ); ?></title>
-<?php wp_head(); ?>
+	<?php wp_head(); ?>
 </head>
 <body <?php body_class( 'maintenance' ); ?>>
 <main id="contenu" class="maint">
@@ -183,7 +182,15 @@ function vsg_maint_render() {
 			<?php
 			$logo_id = get_theme_mod( 'custom_logo' );
 			echo $logo_id
-				? wp_get_attachment_image( $logo_id, 'thumbnail', false, array( 'class' => 'maint__logo', 'alt' => '' ) )
+				? wp_get_attachment_image(
+					$logo_id,
+					'thumbnail',
+					false,
+					array(
+						'class' => 'maint__logo',
+						'alt'   => '',
+					)
+				)
 				: '<img class="maint__logo" src="' . esc_url( VSG_URI . '/assets/img/logo-mark.svg' ) . '" alt="" width="64" height="56">';
 			?>
 			<p class="maint__name"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></p>
@@ -191,17 +198,17 @@ function vsg_maint_render() {
 		<h1>Site en maintenance</h1>
 		<div class="maint__msg">
 			<?php foreach ( $lines as $l ) : ?>
-				<p><?php echo make_clickable( esc_html( $l ) ); // phpcs:ignore ?></p>
+				<p><?php echo make_clickable( esc_html( $l ) ); ?></p>
 			<?php endforeach; ?>
 		</div>
-		<?php if ( $s['hours'] && function_exists( 'vsg_parishes' ) && vsg_parishes() ) : ?>
+		<?php if ( $s['hours'] && vsg_parishes() ) : ?>
 			<h2>Horaires des messes</h2>
 			<div class="maint__hours">
 				<?php
 				foreach ( vsg_parishes() as $p ) {
-					echo '<div class="hourscard" style="--accent:' . esc_attr( vsg_parish_color( $p ) ) . '">' . vsg_hours_block( $p->ID, 'Église ' . get_the_title( $p ) ) . '</div>'; // phpcs:ignore
+					echo '<div class="hourscard" style="--accent:' . esc_attr( vsg_parish_color( $p ) ) . '">' . vsg_hours_block( $p->ID, 'Église ' . get_the_title( $p ) ) . '</div>';
 					foreach ( vsg_chapels( $p->ID ) as $c ) {
-						echo '<div class="hourscard" style="--accent:' . esc_attr( vsg_parish_color( $p ) ) . '">' . vsg_hours_block( $c->ID, get_the_title( $c ) ) . '</div>'; // phpcs:ignore
+						echo '<div class="hourscard" style="--accent:' . esc_attr( vsg_parish_color( $p ) ) . '">' . vsg_hours_block( $c->ID, get_the_title( $c ) ) . '</div>';
 					}
 				}
 				?>
@@ -209,7 +216,7 @@ function vsg_maint_render() {
 		<?php endif; ?>
 	</div>
 </main>
-<?php wp_footer(); ?>
+	<?php wp_footer(); ?>
 </body>
 </html>
 	<?php

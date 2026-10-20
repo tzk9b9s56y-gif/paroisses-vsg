@@ -16,7 +16,7 @@ the_post();
 </section>
 <section class="band band--tight">
 	<div class="wrap narrow">
-		<?php echo vsg_messe_form(); // phpcs:ignore ?>
+		<?php echo vsg_messe_form(); ?>
 	</div>
 </section>
 <?php

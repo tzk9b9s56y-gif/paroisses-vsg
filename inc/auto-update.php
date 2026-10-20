@@ -12,9 +12,7 @@
  * Réglage et journal : Apparence › Mises à jour du thème.
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /** Clé partagée avec GitHub (créée au premier besoin). */
 function vsg_au_secret() {
@@ -26,11 +24,6 @@ function vsg_au_secret() {
 	return $s;
 }
 
-function vsg_au_log( $source, $msg ) {
-	$log   = get_option( 'vsg_update_log', array() );
-	$log[] = array( 'time' => current_time( 'd/m/Y H:i' ), 'source' => $source, 'msg' => $msg );
-	update_option( 'vsg_update_log', array_slice( $log, -15 ), false );
-}
 
 /**
  * Vérifie le style.css d'un commit : version lisible et fichier complet.
@@ -66,7 +59,10 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	$slug  = get_template();
 	$local = wp_get_theme( $slug )->get( 'Version' );
 	if ( $sha && preg_match( '/^[0-9a-f]{40}$/', $sha ) ) {
-		$rel = array( 'version' => vsg_au_check_css( $sha ), 'sha' => $sha );
+		$rel = array(
+			'version' => vsg_au_check_css( $sha ),
+			'sha'     => $sha,
+		);
 	} else {
 		delete_site_transient( 'vsg_remote_release' );
 		$rel = vsg_remote_release( true );
@@ -78,13 +74,13 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	if ( ! $rel['version'] || empty( $rel['sha'] ) ) {
 		delete_transient( 'vsg_au_lock' );
 		$msg = 'Version de GitHub illisible ou feuille de style incomplète : rien n\'est installé.';
-		vsg_au_log( $source, $msg );
+		vsg_journal( $source, $msg );
 		return $msg;
 	}
 	if ( ! version_compare( $rel['version'], $local, '>' ) ) {
 		delete_transient( 'vsg_au_lock' );
 		if ( 'heure' !== $source ) {
-			vsg_au_log( $source, 'Déjà à jour (' . $local . ').' );
+			vsg_journal( $source, 'Déjà à jour (' . $local . ').' );
 		}
 		return 'Le thème est déjà à jour (' . $local . ').';
 	}
@@ -107,7 +103,7 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	if ( true === $result && version_compare( $now, $local, '>' ) ) {
 		$msg = 'Mise à jour installée : ' . $local . ' → ' . $now . '.';
 		/* Le site doit répondre avec la nouvelle version ; sinon on remet l'ancienne. */
-		$ok = function_exists( 'vsg_site_responds' ) ? vsg_site_responds() : null;
+		$ok = vsg_site_responds();
 		if ( false === $ok && $backup ) {
 			$msg = vsg_au_restore( $slug, $backup )
 				? 'La ' . $now . ' a été installée mais le site ne répondait plus : la ' . $local . ' a été remise en place automatiquement.'
@@ -120,7 +116,7 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 		$msg = 'Échec de l\'installation de la ' . $rel['version'] . ( $err ? ' : ' . $err : '.' ) . ' Le thème ' . $local . ' reste en place.';
 	}
 	delete_transient( 'vsg_au_lock' );
-	vsg_au_log( $source, $msg );
+	vsg_journal( $source, $msg );
 	return $msg;
 }
 
@@ -199,22 +195,46 @@ add_action(
 					$sig  = (string) $req->get_header( 'x_hub_signature_256' );
 					$calc = 'sha256=' . hash_hmac( 'sha256', $req->get_body(), vsg_au_secret() );
 					if ( ! $sig || ! hash_equals( $calc, $sig ) ) {
-						return new WP_REST_Response( array( 'ok' => false, 'message' => 'Signature invalide.' ), 401 );
+						return new WP_REST_Response(
+							array(
+								'ok'      => false,
+								'message' => 'Signature invalide.',
+							),
+							401
+						);
 					}
 					$event = (string) $req->get_header( 'x_github_event' );
 					if ( 'ping' === $event ) {
-						vsg_au_log( 'github', 'Liaison avec GitHub établie.' );
-						return new WP_REST_Response( array( 'ok' => true, 'message' => 'Liaison établie.' ), 200 );
+						vsg_journal( 'github', 'Liaison avec GitHub établie.' );
+						return new WP_REST_Response(
+							array(
+								'ok'      => true,
+								'message' => 'Liaison établie.',
+							),
+							200
+						);
 					}
 					$data = json_decode( $req->get_body(), true );
 					if ( 'push' !== $event || ! is_array( $data ) || 'refs/heads/' . VSG_GITHUB_BRANCH !== ( $data['ref'] ?? '' ) ) {
-						return new WP_REST_Response( array( 'ok' => true, 'message' => 'Ignoré.' ), 200 );
+						return new WP_REST_Response(
+							array(
+								'ok'      => true,
+								'message' => 'Ignoré.',
+							),
+							200
+						);
 					}
 					$sha = (string) ( $data['after'] ?? '' );
 					/* L'installation prend plus de temps que GitHub n'en accorde : elle part en tâche de fond. */
 					wp_schedule_single_event( time(), 'vsg_au_event', array( 'github', $sha ) );
 					spawn_cron();
-					return new WP_REST_Response( array( 'ok' => true, 'message' => 'Installation programmée.' ), 202 );
+					return new WP_REST_Response(
+						array(
+							'ok'      => true,
+							'message' => 'Installation programmée.',
+						),
+						202
+					);
 				},
 			)
 		);
@@ -245,14 +265,13 @@ function vsg_au_admin_page() {
 	}
 	$local = wp_get_theme( get_template() )->get( 'Version' );
 	$rel   = vsg_remote_release();
-	$log   = array_reverse( get_option( 'vsg_update_log', array() ) );
 	$next  = wp_next_scheduled( 'vsg_au_event', array( 'heure', '' ) );
 	?>
 	<div class="wrap">
 		<h1>Mises à jour du thème</h1>
 		<?php if ( $notice ) : ?><div class="notice notice-info"><p><?php echo esc_html( $notice ); ?></p></div><?php endif; ?>
 		<p>Version installée : <strong><?php echo esc_html( $local ); ?></strong> · Version sur GitHub : <strong><?php echo esc_html( $rel['version'] ? $rel['version'] : '?' ); ?></strong>
-		<?php if ( $next ) : ?> · Prochaine vérification automatique : <?php echo esc_html( wp_date( 'H:i', $next ) ); ?><?php endif; ?></p>
+		<?php if ( $next ) : ?>· Prochaine vérification automatique : <?php echo esc_html( wp_date( 'H:i', $next ) ); ?><?php endif; ?></p>
 		<form method="post">
 			<?php wp_nonce_field( 'vsg_au' ); ?>
 			<p><button class="button button-primary" name="vsg_au_now" value="1">Vérifier et installer maintenant</button></p>
@@ -280,15 +299,7 @@ function vsg_au_admin_page() {
 		</form>
 
 		<h2>Journal</h2>
-		<?php if ( $log ) : ?>
-			<table class="widefat striped vsg-w900"><thead><tr><th>Date</th><th>Origine</th><th>Résultat</th></tr></thead><tbody>
-			<?php foreach ( $log as $l ) : ?>
-				<tr><td><?php echo esc_html( $l['time'] ); ?></td><td><?php echo esc_html( array( 'github' => 'Signal GitHub', 'heure' => 'Vérification horaire', 'manuel' => 'Manuel', 'serveur' => 'Serveur' )[ $l['source'] ] ?? $l['source'] ); ?></td><td><?php echo esc_html( $l['msg'] ); ?></td></tr>
-			<?php endforeach; ?>
-			</tbody></table>
-		<?php else : ?>
-			<p>Rien pour l'instant.</p>
-		<?php endif; ?>
+		<?php echo vsg_journal_table(); ?>
 	</div>
 	<?php
 }

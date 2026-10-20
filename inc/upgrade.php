@@ -6,9 +6,7 @@
  * (version de contenu 0.9.18 au moment du retrait).
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 const VSG_CONTENT_VERSION = '0.9.25';
 
@@ -118,9 +116,22 @@ function vsg_mentions_content() {
 
 /** 0.9.17 : mentions légales complètes (seulement si la page n'a pas été réécrite à la main). */
 function vsg_upgrade_0917() {
-	foreach ( get_posts( array( 'post_type' => 'page', 'name' => 'mentions-legales', 'post_status' => array( 'publish', 'draft', 'private' ), 'posts_per_page' => -1 ) ) as $p ) {
+	foreach ( get_posts(
+		array(
+			'post_type'      => 'page',
+			'name'           => 'mentions-legales',
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+		)
+	) as $p ) {
 		if ( vsg_upgrade_is_demo_text( $p, 'Le père Mathieu Coulibaly, curé.' ) ) {
-			wp_update_post( array( 'ID' => $p->ID, 'post_title' => 'Mentions légales et données personnelles', 'post_content' => vsg_mentions_content() ) );
+			wp_update_post(
+				array(
+					'ID'           => $p->ID,
+					'post_title'   => 'Mentions légales et données personnelles',
+					'post_content' => vsg_mentions_content(),
+				)
+			);
 		}
 	}
 }
@@ -151,9 +162,16 @@ function vsg_upgrade_set_illustration( $page_id, $file, $title ) {
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	$tmp = wp_tempnam( $file );
 	copy( $src, $tmp );
-	$id = media_handle_sideload( array( 'name' => $file, 'tmp_name' => $tmp ), $page_id, $title );
+	$id = media_handle_sideload(
+		array(
+			'name'     => $file,
+			'tmp_name' => $tmp,
+		),
+		$page_id,
+		$title
+	);
 	if ( is_wp_error( $id ) ) {
-		@unlink( $tmp ); // phpcs:ignore
+		wp_delete_file( $tmp );
 		return;
 	}
 	update_post_meta( $id, '_wp_attachment_image_alt', '' );
@@ -167,7 +185,15 @@ function vsg_upgrade_set_illustration( $page_id, $file, $title ) {
  */
 function vsg_upgrade_0918() {
 	$tpl   = VSG_TPL_COMMUNAUTE;
-	$pages = get_posts( array( 'post_type' => 'page', 'post_status' => array( 'publish', 'draft', 'private' ), 'posts_per_page' => -1, 'meta_key' => '_wp_page_template', 'meta_value' => $tpl ) );
+	$pages = get_posts(
+		array(
+			'post_type'      => 'page',
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+			'meta_key'       => '_wp_page_template',
+			'meta_value'     => $tpl,
+		)
+	);
 
 	/* 1. Type d'agenda de chaque page de groupe (si rien n'est encore choisi). */
 	$map = vsg_upgrade_group_pages();
@@ -186,8 +212,20 @@ function vsg_upgrade_0918() {
 	}
 	if ( $ndl_list ) {
 		$order = 10;
-		foreach ( array( 'tamoule' => array( 'Communauté tamoule', 'communaute-tamoule' ), 'anizan' => array( 'Groupe Anizan', 'groupe-anizan' ) ) as $type => $info ) {
-			if ( get_posts( array( 'post_type' => 'page', 'post_status' => array( 'publish', 'draft', 'private' ), 'meta_key' => '_vsg_type', 'meta_value' => $type, 'fields' => 'ids', 'posts_per_page' => 1 ) ) ) {
+		foreach ( array(
+			'tamoule' => array( 'Communauté tamoule', 'communaute-tamoule' ),
+			'anizan'  => array( 'Groupe Anizan', 'groupe-anizan' ),
+		) as $type => $info ) {
+			if ( get_posts(
+				array(
+					'post_type'      => 'page',
+					'post_status'    => array( 'publish', 'draft', 'private' ),
+					'meta_key'       => '_vsg_type',
+					'meta_value'     => $type,
+					'fields'         => 'ids',
+					'posts_per_page' => 1,
+				)
+			) ) {
 				continue;
 			}
 			$id = wp_insert_post(
@@ -218,7 +256,15 @@ function vsg_upgrade_0918() {
 		'communaute-tamoule'   => 'communaute-tamoule.jpg',
 		'groupe-anizan'        => 'groupe-anizan.jpg',
 	);
-	foreach ( get_posts( array( 'post_type' => 'page', 'post_status' => array( 'publish', 'draft', 'private' ), 'posts_per_page' => -1, 'meta_key' => '_wp_page_template', 'meta_value' => $tpl ) ) as $p ) {
+	foreach ( get_posts(
+		array(
+			'post_type'      => 'page',
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+			'meta_key'       => '_wp_page_template',
+			'meta_value'     => $tpl,
+		)
+	) as $p ) {
 		$file = $files[ $p->post_name ] ?? '';
 		if ( 'chorale' === $p->post_name ) {
 			$ctx  = vsg_context_parish( $p );
@@ -232,21 +278,49 @@ function vsg_upgrade_0918() {
 	/* 4. « Horaires » : la page couvre aussi les confessions et l'adoration. */
 	$hours = vsg_hours_page();
 	if ( $hours && 'Horaires des messes' === $hours->post_title ) {
-		wp_update_post( array( 'ID' => $hours->ID, 'post_title' => 'Horaires' ) );
+		wp_update_post(
+			array(
+				'ID'         => $hours->ID,
+				'post_title' => 'Horaires',
+			)
+		);
 	}
-	foreach ( get_posts( array( 'post_type' => 'page', 'name' => 'agenda', 'post_status' => array( 'publish', 'draft', 'private' ), 'posts_per_page' => -1 ) ) as $p ) {
+	foreach ( get_posts(
+		array(
+			'post_type'      => 'page',
+			'name'           => 'agenda',
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+		)
+	) as $p ) {
 		if ( false !== strpos( $p->post_content, '/horaires-des-messes/">Horaires des messes</a>' ) ) {
-			wp_update_post( array( 'ID' => $p->ID, 'post_content' => str_replace( '/horaires-des-messes/">Horaires des messes</a>', '/horaires-des-messes/">Horaires</a>', $p->post_content ) ) );
+			wp_update_post(
+				array(
+					'ID'           => $p->ID,
+					'post_content' => str_replace( '/horaires-des-messes/">Horaires des messes</a>', '/horaires-des-messes/">Horaires</a>', $p->post_content ),
+				)
+			);
 		}
 	}
 
 	/* 5. Mentions légales : ajout du contact du diocèse (si la page n'a pas été réécrite à la main). */
-	foreach ( get_posts( array( 'post_type' => 'page', 'name' => 'mentions-legales', 'post_status' => array( 'publish', 'draft', 'private' ), 'posts_per_page' => -1 ) ) as $p ) {
+	foreach ( get_posts(
+		array(
+			'post_type'      => 'page',
+			'name'           => 'mentions-legales',
+			'post_status'    => array( 'publish', 'draft', 'private' ),
+			'posts_per_page' => -1,
+		)
+	) as $p ) {
 		if ( vsg_upgrade_is_demo_text( $p, 'Écrivez au secrétariat (secretariat@ndl-sg-eglises94.fr ou 40 avenue Anatole-France, 94190 Villeneuve-Saint-Georges) ou à l\'Association diocésaine' ) ) {
-			wp_update_post( array( 'ID' => $p->ID, 'post_content' => vsg_mentions_content() ) );
+			wp_update_post(
+				array(
+					'ID'           => $p->ID,
+					'post_content' => vsg_mentions_content(),
+				)
+			);
 		}
 	}
-
 }
 
 
@@ -263,14 +337,28 @@ function vsg_upgrade_0925() {
 	$demo = get_user_by( 'login', 'secretariat' );
 	if ( $demo && str_ends_with( (string) $demo->user_email, '@example.org' ) && ! user_can( $demo, 'manage_options' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/user.php';
-		$admins = get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) );
+		$admins = get_users(
+			array(
+				'role'   => 'administrator',
+				'number' => 1,
+				'fields' => 'ID',
+			)
+		);
 		wp_delete_user( $demo->ID, $admins ? (int) $admins[0] : null );
 	}
 
 	$ndl = get_term_by( 'slug', 'notre-dame-de-lourdes', 'category' );
 	if ( $ndl ) {
 		$default = (int) get_option( 'default_category' );
-		foreach ( get_posts( array( 'post_type' => 'evenement', 'post_status' => array( 'publish', 'private', 'draft' ), 'posts_per_page' => -1, 'meta_key' => '_vsg_type', 'meta_value' => 'brocante' ) ) as $p ) {
+		foreach ( get_posts(
+			array(
+				'post_type'      => 'evenement',
+				'post_status'    => array( 'publish', 'private', 'draft' ),
+				'posts_per_page' => -1,
+				'meta_key'       => '_vsg_type',
+				'meta_value'     => 'brocante',
+			)
+		) as $p ) {
 			$terms = wp_get_post_terms( $p->ID, 'category', array( 'fields' => 'ids' ) );
 			if ( ! array_diff( array_map( 'intval', $terms ), array( $default ) ) ) {
 				wp_set_post_terms( $p->ID, array( (int) $ndl->term_id ), 'category' );
@@ -278,10 +366,6 @@ function vsg_upgrade_0925() {
 		}
 	}
 
-	if ( function_exists( 'vsg_secrets_migrate' ) ) {
-		vsg_secrets_migrate();
-	}
-	if ( function_exists( 'vsg_htaccess_write' ) ) {
-		vsg_htaccess_write();
-	}
+	vsg_secrets_migrate();
+	vsg_htaccess_write();
 }
