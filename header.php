@@ -26,7 +26,6 @@ foreach ( array_keys( $common ) as $slug ) {
 if ( is_singular( 'evenement' ) && ! $context ) {
 	$current_common = 'agenda';
 }
-$names = wp_list_pluck( vsg_parishes(), 'post_title' );
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -102,16 +101,6 @@ $names = wp_list_pluck( vsg_parishes(), 'post_title' );
 			<img src="<?php echo esc_url( VSG_URI . '/assets/img/logo-diocese-creteil.png' ); ?>" alt="Diocèse de Créteil" width="120" height="99">
 			<span class="sr-only"> (site du diocèse, nouvel onglet)</span>
 		</a>
-	</div>
-	<div class="navbar">
-		<nav class="wrap topbar__nav" aria-label="Pages communes">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>"<?php echo is_front_page() ? ' aria-current="page"' : ''; ?>>Accueil</a>
-			<?php foreach ( $common as $slug => $label ) : ?>
-				<a href="<?php echo esc_url( vsg_page_url( $slug ) ); ?>"<?php echo $slug === $current_common ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $label ); ?></a>
-			<?php endforeach; ?>
-			<a href="<?php echo esc_url( vsg_page_url( 'soutenir' ) ); ?>"<?php echo is_page( 'soutenir' ) ? ' aria-current="page"' : ''; ?>>Soutenir la paroisse</a>
-			<a class="topbar__don" href="<?php echo esc_url( vsg_denier_url() ); ?>" target="_blank" rel="noopener">Donner au denier<span class="sr-only"> (nouvel onglet)</span></a>
-		</nav>
 	</div>
 </header>
 <?php vsg_auto_breadcrumb(); ?>

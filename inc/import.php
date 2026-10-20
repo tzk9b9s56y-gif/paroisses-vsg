@@ -657,8 +657,8 @@ function vsg_import_page() {
 				<p><a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=evenement&page=vsg-import' ) ); ?>">Retour</a></p>
 			<?php else : ?>
 				<p><strong><?php echo count( $purge['ids'] ); ?></strong> rendez-vous, publics et internes, vont partir à la corbeille. Ils restent récupérables 30 jours.</p>
-				<details style="max-width:1100px;margin-bottom:12px"><summary>Voir la liste</summary>
-					<table class="widefat striped" style="margin-top:8px"><thead><tr><th>Date</th><th>Titre</th><th>Lieu</th><th>Visibilité</th></tr></thead><tbody>
+				<details class="vsg-w1100 vsg-mb12b"><summary>Voir la liste</summary>
+					<table class="widefat striped vsg-mt8"><thead><tr><th>Date</th><th>Titre</th><th>Lieu</th><th>Visibilité</th></tr></thead><tbody>
 					<?php foreach ( $purge['ids'] as $id ) : ?>
 						<tr><td><?php echo esc_html( gmdate( 'd/m/Y', strtotime( vsg_meta( $id, 'date' ) . ' 12:00:00' ) ) ); ?></td><td><?php echo esc_html( get_the_title( $id ) ); ?></td><td><?php echo esc_html( vsg_place_label( get_post( $id ) ) ); ?></td><td><?php echo 'private' === get_post_status( $id ) ? 'Interne' : 'Public'; ?></td></tr>
 					<?php endforeach; ?>
@@ -670,7 +670,7 @@ function vsg_import_page() {
 					<input type="hidden" name="vsg_purge_place" value="<?php echo esc_attr( $purge['place'] ); ?>">
 					<input type="hidden" name="vsg_purge_type" value="<?php echo esc_attr( $purge['type'] ); ?>">
 					<input type="hidden" name="vsg_purge_period" value="<?php echo esc_attr( $purge['period'] ); ?>">
-					<button class="button button-primary button-hero" style="background:#b32d2e;border-color:#b32d2e">Mettre ces <?php echo count( $purge['ids'] ); ?> rendez-vous à la corbeille</button>
+					<button class="button button-primary button-hero vsg-btn-danger">Mettre ces <?php echo count( $purge['ids'] ); ?> rendez-vous à la corbeille</button>
 					<a class="button button-hero" href="<?php echo esc_url( admin_url( 'edit.php?post_type=evenement&page=vsg-import' ) ); ?>">Annuler</a>
 				</form>
 			<?php endif; ?>
@@ -690,17 +690,17 @@ function vsg_import_page() {
 			<h2>Aperçu</h2>
 			<p><strong><?php echo (int) $new; ?></strong> rendez-vous à créer, <strong><?php echo (int) $upd; ?></strong> à mettre à jour, <strong><?php echo count( $errors ); ?></strong> ligne(s) ignorée(s).</p>
 			<?php if ( $errors ) : ?>
-				<div class="notice notice-warning"><p><strong>Lignes ignorées</strong> (corrigez-les dans le fichier et recommencez, ou importez sans elles) :</p><ul style="margin-left:1.5em;list-style:disc"><?php foreach ( $errors as $e ) : ?><li><?php echo esc_html( $e ); ?></li><?php endforeach; ?></ul></div>
+				<div class="notice notice-warning"><p><strong>Lignes ignorées</strong> (corrigez-les dans le fichier et recommencez, ou importez sans elles) :</p><ul class="vsg-list"><?php foreach ( $errors as $e ) : ?><li><?php echo esc_html( $e ); ?></li><?php endforeach; ?></ul></div>
 			<?php endif; ?>
 			<?php if ( $items ) : ?>
-				<table class="widefat striped" style="max-width:1100px">
+				<table class="widefat striped vsg-w1100">
 					<thead><tr><th>Date</th><th>Heure</th><th>Titre</th><th>Lieu</th><th>Type</th><th>Visibilité</th><th>Action</th></tr></thead>
 					<tbody>
 					<?php foreach ( $items as $it ) : ?>
 						<tr>
 							<td><?php echo esc_html( gmdate( 'd/m/Y', strtotime( $it['date'] . ' 12:00:00' ) ) ); ?></td>
 							<td><?php echo esc_html( $it['time'] ); ?></td>
-							<td><?php echo esc_html( $it['title'] ); ?><?php echo $it['lieu'] ? '<br><span style="color:#50575e">' . esc_html( $it['lieu'] ) . '</span>' : ''; ?></td>
+							<td><?php echo esc_html( $it['title'] ); ?><?php echo $it['lieu'] ? '<br><span class="vsg-help">' . esc_html( $it['lieu'] ) . '</span>' : ''; ?></td>
 							<td><?php echo esc_html( array_search( $it['place'], $places, true ) ); ?></td>
 							<td><?php echo esc_html( $types[ $it['type'] ][0] ?? '—' ); ?></td>
 							<td><?php echo $it['private'] ? 'Interne' : 'Public'; ?></td>
@@ -709,7 +709,7 @@ function vsg_import_page() {
 					<?php endforeach; ?>
 					</tbody>
 				</table>
-				<form method="post" style="margin-top:16px">
+				<form class="vsg-mt16" method="post">
 					<?php wp_nonce_field( 'vsg_import', 'vsg_import_nonce' ); ?>
 					<input type="hidden" name="vsg_action" value="apply">
 					<button class="button button-primary button-hero">Importer ces <?php echo count( $items ); ?> rendez-vous</button>
@@ -720,7 +720,7 @@ function vsg_import_page() {
 			<?php endif; ?>
 
 		<?php else : ?>
-			<div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:32px;max-width:1100px">
+			<div class="vsg-twocol">
 				<div>
 					<h2>1. Choisir le fichier</h2>
 					<p>Un fichier Excel (.xlsx) ou .csv, une ligne par rendez-vous, avec la première ligne d'en-têtes. Deux fichiers, jamais mélangés : l'<strong>agenda paroissial</strong> rempli par le secrétariat (modèle « agenda paroissial »), et le <strong>programme de chaque communauté</strong>, rempli par la communauté (modèle « communauté »), importé en la choisissant ci-dessous.</p>
@@ -739,11 +739,11 @@ function vsg_import_page() {
 					</form>
 					<p class="description">Rien n'est enregistré à cette étape : vous verrez d'abord un aperçu et la liste des lignes à corriger.</p>
 
-					<h2 style="margin-top:32px">Exporter l'agenda</h2>
+					<h2 class="vsg-mt32">Exporter l'agenda</h2>
 					<p>Récupère tous les rendez-vous du site dans un fichier que vous pouvez corriger dans Excel puis réimporter, ou utiliser pour le calendrier papier.</p>
 					<p><a class="button" href="<?php echo esc_url( $export ); ?>">Télécharger l'agenda (.csv)</a>
 					<a class="button" href="<?php echo esc_url( add_query_arg( 'from', current_time( 'Y-m-d' ), $export ) ); ?>">Seulement à venir</a></p>
-					<h2 style="margin-top:32px">Vider l'agenda</h2>
+					<h2 class="vsg-mt32">Vider l'agenda</h2>
 					<p>Pour repartir de zéro avant un nouvel import : retire d'un coup les rendez-vous d'un lieu ou d'un groupe, publics et internes. Ils partent à la corbeille (récupérables 30 jours). Le nombre exact est affiché avant confirmation.</p>
 					<form method="post">
 						<?php wp_nonce_field( 'vsg_import', 'vsg_import_nonce' ); ?>
@@ -773,15 +773,15 @@ function vsg_import_page() {
 						<p class="description">Dernier import : <?php echo esc_html( $log['when'] ); ?> par <?php echo esc_html( $log['who'] ); ?> (<?php echo (int) $log['created']; ?> créés, <?php echo (int) $log['updated']; ?> mis à jour).</p>
 					<?php endif; ?>
 				</div>
-				<div style="background:#fff;border:1px solid #c3c4c7;padding:16px 20px;border-radius:4px">
-					<h2 style="margin-top:0">Programme d'une communauté</h2>
+				<div class="vsg-box">
+					<h2 class="vsg-mt0">Programme d'une communauté</h2>
 					<p>Modèle « communauté » : <strong>Date</strong> · Date de fin · Heure · <strong>Activité</strong> · Thème · Lieu. Choisissez la communauté dans la liste : tous les rendez-vous du fichier lui sont rattachés et s'affichent sur sa page, pas dans l'agenda du site.</p>
 					<p class="description">Lieu : « Église N.D. Lourdes », « Chapelle St Louis »… sont reconnus et rangés dans la bonne paroisse ou chapelle. Tout autre lieu (En ligne, Chevilly-Larue…) est affiché tel quel. Date de fin : pour une retraite ou une neuvaine, le site affiche « Du 11 au 13 septembre ».</p>
 					<p><a class="button" href="<?php echo esc_url( VSG_URI . '/assets/modeles/modele-agenda-groupe.xlsx' ); ?>">Télécharger le modèle « communauté »</a></p>
 					<h2>Agenda paroissial</h2>
 					<p>Tout ce qui est lié à la paroisse : messes particulières, sacrements, caté, aumônerie, jeunes, chorales, servants, brocante, diocèse, équipes.</p>
 					<p><a class="button" href="<?php echo esc_url( VSG_URI . '/assets/modeles/modele-agenda.xlsx' ); ?>">Télécharger le modèle « agenda paroissial »</a></p>
-					<ol style="margin-left:1.2em">
+					<ol class="vsg-ml">
 						<li><strong>Date</strong> : 15/01/2027</li>
 						<li><strong>Date de fin</strong> : pour un rendez-vous sur plusieurs jours (facultatif)</li>
 						<li><strong>Heure</strong> : 17h15 (vide si toute la journée)</li>

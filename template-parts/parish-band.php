@@ -54,16 +54,11 @@ foreach ( $tabs as $t ) {
 			<span class="eyebrow">Paroisse</span>
 			<span class="parishband__title"><?php echo esc_html( get_the_title( $parish ) ); ?></span>
 		</a>
-		<nav class="tabs" aria-label="Rubriques de la paroisse <?php echo esc_attr( get_the_title( $parish ) ); ?>">
-			<?php foreach ( $tabs as $t ) : ?>
-				<a href="<?php echo esc_url( get_permalink( $t ) ); ?>"<?php echo $t->ID === $active ? ( ( $current instanceof WP_Post && $current->ID === $t->ID ) ? ' aria-current="page"' : ' aria-current="true"' ) : ''; ?>><?php echo esc_html( $t->ID === $parish->ID ? 'Présentation' : get_the_title( $t ) ); ?></a>
-			<?php endforeach; ?>
-		</nav>
 		<details class="menu menu--tabs">
 			<summary><span class="menu__label">Rubriques</span><span class="menu__current"><?php echo esc_html( $active_label ); ?></span></summary>
 			<nav aria-label="Rubriques de la paroisse <?php echo esc_attr( get_the_title( $parish ) ); ?>">
 				<?php foreach ( $tabs as $t ) : ?>
-					<a href="<?php echo esc_url( get_permalink( $t ) ); ?>"<?php echo $t->ID === $active ? ' aria-current="true"' : ''; ?>><?php echo esc_html( $t->ID === $parish->ID ? 'Présentation' : get_the_title( $t ) ); ?></a>
+					<a href="<?php echo esc_url( get_permalink( $t ) ); ?>"<?php echo $t->ID === $active ? ( ( $current instanceof WP_Post && $current->ID === $t->ID ) ? ' aria-current="page"' : ' aria-current="true"' ) : ''; ?>><?php echo esc_html( $t->ID === $parish->ID ? 'Présentation' : get_the_title( $t ) ); ?></a>
 				<?php endforeach; ?>
 			</nav>
 		</details>

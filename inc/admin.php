@@ -32,17 +32,17 @@ function vsg_dashboard_actions() {
 		array( 'Déposer la feuille paroissiale', admin_url( 'post-new.php?post_type=feuille' ), 'Un PDF par paroisse et par semaine.' ),
 		array( 'Modifier une page', admin_url( 'edit.php?post_type=page' ), 'Sacrements, catéchèse, coordonnées…' ),
 	);
-	echo '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">';
+	echo '<div class="vsg-tiles">';
 	foreach ( $actions as $a ) {
-		echo '<a href="' . esc_url( $a[1] ) . '" style="display:block;padding:16px;border:1px solid #c3c4c7;border-radius:8px;text-decoration:none;background:#fff">';
-		echo '<strong style="display:block;font-size:15px;color:#1F3A5F;margin-bottom:4px">' . esc_html( $a[0] ) . '</strong>';
-		echo '<span style="color:#50575e">' . esc_html( $a[2] ) . '</span></a>';
+		echo '<a class="vsg-tile" href="' . esc_url( $a[1] ) . '">';
+		echo '<strong class="vsg-tile__title">' . esc_html( $a[0] ) . '</strong>';
+		echo '<span class="vsg-help">' . esc_html( $a[2] ) . '</span></a>';
 	}
 	echo '</div>';
 	if ( $last ) {
-		echo '<p style="margin:14px 0 0">Dernière feuille déposée : <strong>' . esc_html( get_the_title( $last ) ) . '</strong> (' . esc_html( vsg_post_date( $last ) ) . ').</p>';
+		echo '<p class="vsg-mt14">Dernière feuille déposée : <strong>' . esc_html( get_the_title( $last ) ) . '</strong> (' . esc_html( vsg_post_date( $last ) ) . ').</p>';
 	}
-	echo '<p style="margin:10px 0 0"><a href="' . esc_url( home_url( '/' ) ) . '" target="_blank" rel="noopener">Voir le site</a></p>';
+	echo '<p class="vsg-mt10"><a href="' . esc_url( home_url( '/' ) ) . '" target="_blank" rel="noopener">Voir le site</a></p>';
 }
 
 /* ---------- Listes de l'admin : colonne et filtre « Paroisse » ---------- */
@@ -76,12 +76,12 @@ function vsg_admin_parish_cell( $col, $post_id ) {
 	if ( $parish ) {
 		echo '<strong style="color:' . esc_attr( vsg_parish_color( $parish ) ) . '">' . esc_html( get_the_title( $parish ) ) . '</strong>';
 		if ( $place && $place !== get_the_title( $parish ) ) {
-			echo '<br><span style="color:#646970">' . esc_html( $place ) . '</span>';
+			echo '<br><span class="vsg-muted">' . esc_html( $place ) . '</span>';
 		}
 	} elseif ( $place ) {
-		echo '<span style="color:#646970">' . esc_html( $place ) . '</span>';
+		echo '<span class="vsg-muted">' . esc_html( $place ) . '</span>';
 	} else {
-		echo '<em style="color:#b32d2e">Aucune paroisse choisie</em>';
+		echo '<em class="vsg-danger">Aucune paroisse choisie</em>';
 	}
 }
 
@@ -259,7 +259,7 @@ add_action(
 			return;
 		}
 		$missing = array();
-		foreach ( array( 'agenda', 'communautes', 'contact', 'demande-de-messe', 'horaires-des-messes', 'mentions-legales', 'prier', 'soutenir', 'vivre-en-eglise' ) as $slug ) {
+		foreach ( array( 'agenda', 'communautes', 'contact', 'demande-de-messe', 'horaires-des-messes', 'intention-de-priere', 'mentions-legales', 'prier', 'soutenir', 'vivre-en-eglise' ) as $slug ) {
 			$p = get_page_by_path( $slug );
 			if ( ! $p || 'publish' !== $p->post_status ) {
 				$missing[] = $slug;
@@ -268,5 +268,14 @@ add_action(
 		if ( $missing ) {
 			echo '<div class="notice notice-warning"><p><strong>Pages introuvables :</strong> ' . esc_html( implode( ', ', $missing ) ) . '. Les liens du site vers ces pages mènent à l\'accueil. Vérifiez qu\'elles sont publiées et que leur adresse (slug) n\'a pas changé.</p></div>';
 		}
+	}
+);
+
+/* Styles et script des pages d'administration du thème (au lieu d'attributs style="" dans le HTML). */
+add_action(
+	'admin_enqueue_scripts',
+	function () {
+		wp_enqueue_style( 'vsg-admin', VSG_URI . '/assets/admin.css', array(), VSG_VERSION );
+		wp_enqueue_script( 'vsg-admin', VSG_URI . '/assets/js/admin.js', array(), VSG_VERSION, array( 'in_footer' => true ) );
 	}
 );

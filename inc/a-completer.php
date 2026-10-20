@@ -85,10 +85,10 @@ add_action(
 					$parent = $p->post_parent ? get_the_title( $p->post_parent ) : '';
 					$ctx    = vsg_context_parish( $p );
 					$where  = $ctx ? get_the_title( $ctx ) : 'Commun';
-					echo '<li><a href="' . esc_url( get_edit_post_link( $p->ID ) ) . '">' . esc_html( get_the_title( $p ) ) . '</a> <span style="color:#646970">– '
+					echo '<li><a href="' . esc_url( get_edit_post_link( $p->ID ) ) . '">' . esc_html( get_the_title( $p ) ) . '</a> <span class="vsg-muted">– '
 						. esc_html( $parent && $parent !== $where ? $where . ' › ' . $parent : $where ) . '</span></li>';
 				}
-				echo '</ul><p style="color:#646970">' . count( $pages ) . ' page' . ( count( $pages ) > 1 ? 's' : '' ) . ' à compléter.</p>';
+				echo '</ul><p class="vsg-muted">' . count( $pages ) . ' page' . ( count( $pages ) > 1 ? 's' : '' ) . ' à compléter.</p>';
 			}
 		);
 	}

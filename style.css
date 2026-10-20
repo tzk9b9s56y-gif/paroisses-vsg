@@ -1,7 +1,7 @@
 /*
 Theme Name: Ensemble paroissial Notre-Dame de Lourdes – Sainte-Geneviève
 Description: Thème du site commun des paroisses Notre-Dame de Lourdes et Sainte-Geneviève (chapelles Saint-Louis et Saint-Joseph). Agenda, feuilles paroissiales et formulaire de contact intégrés, sans extension.
-Version: 0.9.25
+Version: 0.9.26
 Requires at least: 6.4
 Requires PHP: 8.1
 Author: Équipe du site paroissial
@@ -43,7 +43,7 @@ a { color: var(--navy); text-underline-offset: 3px; }
 a:hover { color: var(--navy-dark); }
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 /* Sur fond bleu nuit, l'or foncé ne se voit pas assez : anneau or clair. */
-.topbar :focus-visible, .navbar :focus-visible, .sitefooter :focus-visible, .cta :focus-visible, .burger__nav :focus-visible, .skip-link:focus-visible { outline-color: #F2D48A; }
+.sitefooter :focus-visible, .cta :focus-visible, .burger__nav :focus-visible, .skip-link:focus-visible { outline-color: #F2D48A; }
 .btn:focus-visible, .wp-block-button__link:focus-visible { box-shadow: 0 0 0 2px #fff; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; color: var(--navy); line-height: 1.25; margin: 0 0 .5em; letter-spacing: -.005em; }
 h1 { font-size: clamp(26px, 3.2vw, 34px); }
@@ -68,20 +68,6 @@ main:focus { outline: none; }
 
 /* ---------- En-tête ---------- */
 .siteheader { position: relative; border-bottom: 1px solid var(--line); background: #fff; }
-.topbar { background: var(--navy-dark); color: #DCE3EC; }
-.topbar__in { display: flex; justify-content: flex-end; padding-top: 5px; padding-bottom: 5px; }
-.topbar__diocese { font-size: 14px; color: #DCE3EC; text-decoration: none; }
-.topbar__diocese:hover { color: #fff; text-decoration: underline; }
-.navbar { background: var(--navy); }
-.burger { display: none; }
-.topbar__nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; }
-.topbar__nav a { flex: 1 1 auto; text-align: center; }
-.topbar__nav a { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: .01em; text-decoration: none; padding: 12px 6px; }
-.topbar__nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
-.topbar__nav a[aria-current] { box-shadow: inset 0 -3px 0 0 var(--gold); text-decoration: none; }
-.topbar__nav a.topbar__don[aria-current] { box-shadow: inset 0 0 0 2px #fff; }
-.topbar__nav a.topbar__don { flex: 0 0 auto; background: var(--gold); padding: 7px 16px; margin: 4px 0; border-radius: 6px; text-decoration: none; }
-.topbar__nav a.topbar__don:hover { background: #6E4F10; }
 .mainbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 18px; padding-top: 12px; padding-bottom: 12px; }
 .diocese-badge { margin-left: auto; flex: none; display: block; }
 @media (max-width: 1100px) { .parishnav { order: 3; flex-basis: 100%; } }
@@ -141,10 +127,6 @@ main:focus { outline: none; }
 .parishband .wrap { padding-top: 20px; }
 .parishband__name { display: inline-flex; flex-direction: column; text-decoration: none; margin-bottom: 6px; }
 .parishband__title { font-family: var(--serif); font-weight: 600; font-size: 24px; color: var(--accent); line-height: 1.2; }
-.tabs { display: flex; flex-wrap: wrap; gap: 0 24px; }
-.tabs a { flex: none; color: var(--muted); font-weight: 700; font-size: 16px; padding: 12px 0; text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-.tabs a:hover { color: var(--navy); }
-.tabs a[aria-current] { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* Menu déroulant (téléphone) : remplace les onglets et les filtres qui défilent */
 .menu { display: none; margin: 4px 0 14px; }
@@ -278,17 +260,6 @@ main:focus { outline: none; }
 .tile__icon { font-size: 26px; line-height: 1; color: var(--accent); }
 .has-parish .tile__title { color: var(--accent); }
 .tiles--menu .tile { background: #fff; }
-.hoursacc { display: none; }
-@media all {
-	.hoursgrid { display: none; }
-	.hoursacc { display: block; }
-	.hoursacc details { border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: var(--radius); background: #fff; margin-bottom: 12px; }
-	.hoursacc summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; font-family: var(--serif); font-weight: 600; font-size: 18px; color: var(--accent); }
-	.hoursacc summary::-webkit-details-marker { display: none; }
-	.hoursacc summary::after { content: ""; flex: none; width: 10px; height: 10px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin: -4px 4px 0 0; }
-	.hoursacc details[open] summary::after { transform: rotate(-135deg); margin-top: 4px; }
-	.hoursacc details > div { padding: 0 18px 18px; }
-}
 .tile__title { font-family: var(--serif); font-weight: 600; font-size: 19px; color: var(--navy); }
 .tile__text { font-size: 15px; color: var(--muted); }
 .album { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); }
@@ -298,10 +269,6 @@ main:focus { outline: none; }
 .album__meta { font-size: 15px; color: var(--muted); }
 
 /* ---------- Filtres, pagination, fil d'Ariane ---------- */
-.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.filters a { font-size: 15px; font-weight: 700; padding: 10px 16px; border-radius: 999px; border: 2px solid #C9D2DE; background: #fff; color: var(--navy); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
-.filters a:hover { border-color: var(--navy); }
-.filters a[aria-current] { background: var(--navy); border-color: var(--navy); color: #fff; }
 .jumplinks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .jumplinks a { font-size: 15px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--accent); color: var(--accent); background: #fff; text-decoration: none; }
 .jumplinks a:hover { background: var(--accent); color: #fff; }
@@ -338,9 +305,6 @@ main:focus { outline: none; }
 .hourscard__title a:hover { text-decoration: underline; }
 .hourscard > .muted { margin: 0 0 10px; }
 .programme .chip--group { display: none; }
-.filters--groups { margin: 0 0 20px; align-items: center; }
-.filters--groups .legend__head { flex-basis: auto; margin: 0 4px 0 8px; }
-.filters--groups .legend__head:first-child { margin-left: 0; }
 .programme .menu { margin-bottom: 20px; }
 .hourslinks { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 15px; }
 .hourslinks li { margin-bottom: 8px; }
@@ -476,7 +440,7 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 .menu--types nav a .dot { margin-right: 8px; }
 .legend__head { flex-basis: 100%; margin: 8px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .menu > nav .legend__head { margin: 0; padding: 10px 14px 6px; background: #F4F6F9; border-bottom: 1px solid var(--line); }
-@media print { .month { break-inside: avoid; } .legend, .filters, .menu, .navbar, .burger, .backhome, .sitefooter { display: none !important; } }
+@media print { .month { break-inside: avoid; } .legend, .menu, .burger, .backhome, .sitefooter { display: none !important; } }
 
 /* Infographie « À quoi servent mes dons ? » */
 .prose .dons { max-width: none; margin: 0 0 1.6em; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--paper-line); }
@@ -484,12 +448,8 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 
 /* Onglets, filtres et accordéons : même comportement dépliable sur tous les écrans. */
 @media all {
-	.tabs, .filters, .legend { display: none; }
+	.legend { display: none; }
 	.menu { display: block; }
-}
-@media all {
-	.hoursgrid { display: none; }
-	.hoursacc { display: block; }
 }
 
 /* En-tête : même disposition sur tous les écrans (menu burger partout). */
@@ -497,7 +457,6 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 	.mainbar { position: relative; }
 	.mainbar .brand { flex: 1 1 calc(100% - 140px); min-width: 0; }
 	.diocese-badge { margin-left: auto; }
-	.navbar { display: none; }
 	.burger { display: block; order: 3; flex: none; }
 	.burger__check { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 	.burger__btn { position: relative; z-index: 45; cursor: pointer; display: inline-flex; align-items: center; color: var(--navy); padding: 12px 10px 12px 0; }
@@ -580,10 +539,10 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 }
 
 /* ---------- Mouvement : transitions douces, menu qui se déploie ---------- */
-a, .btn, .wp-block-button__link, button, summary, .tile, .infocard, .card, .don__parish span, .don__amount span, .don__amount--free, .legend a, .filters a, .menu a { transition: background-color .22s ease, color .22s ease, border-color .22s ease, box-shadow .22s ease, opacity .22s ease, transform .18s ease, text-decoration-color .22s ease; }
+a, .btn, .wp-block-button__link, button, summary, .tile, .infocard, .card, .don__parish span, .don__amount span, .don__amount--free, .legend a, .menu a { transition: background-color .22s ease, color .22s ease, border-color .22s ease, box-shadow .22s ease, opacity .22s ease, transform .18s ease, text-decoration-color .22s ease; }
 .btn:active, .wp-block-button__link:active, .don__parish input:active + span, .don__amount input:active + span { transform: translateY(1px); }
 .burger__check:checked ~ .burger__nav { animation: vsg-drop .22s ease both; }
-.month[open] .month__body, .hoursacc[open] > :not(summary) { animation: vsg-fade .25s ease both; }
+.month[open] .month__body { animation: vsg-fade .25s ease both; }
 .notice { animation: vsg-fade .3s ease both; }
 .burger__icon i { transition: transform .22s ease, opacity .22s ease, background-color .22s ease; }
 .burger__check:checked ~ .burger__btn .burger__icon i:nth-child(1) { transform: translateY(7px) rotate(45deg); }

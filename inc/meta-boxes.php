@@ -37,14 +37,14 @@ add_action(
 function vsg_field( $post_id, $key, $label, $type = 'text', $help = '' ) {
 	$val = vsg_meta( $post_id, $key );
 	$id  = 'vsg_' . $key;
-	echo '<p style="margin:0 0 12px"><label for="' . esc_attr( $id ) . '" style="display:block;font-weight:600;margin-bottom:4px">' . esc_html( $label ) . '</label>';
+	echo '<p class="vsg-mb12"><label class="vsg-label" for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
 	if ( 'textarea' === $type ) {
 		echo '<textarea class="widefat" rows="3" id="' . esc_attr( $id ) . '" name="' . esc_attr( $id ) . '">' . esc_textarea( $val ) . '</textarea>';
 	} else {
 		echo '<input class="widefat" type="' . esc_attr( $type ) . '" id="' . esc_attr( $id ) . '" name="' . esc_attr( $id ) . '" value="' . esc_attr( $val ) . '">';
 	}
 	if ( $help ) {
-		echo '<span style="display:block;color:#50575e;margin-top:4px">' . esc_html( $help ) . '</span>';
+		echo '<span class="vsg-hint">' . esc_html( $help ) . '</span>';
 	}
 	echo '</p>';
 }
@@ -55,20 +55,20 @@ function vsg_box_event( $post ) {
 	vsg_field( $post->ID, 'heure', 'Heure', 'time', 'Laisser vide si toute la journée.' );
 	vsg_field( $post->ID, 'lieu', 'Lieu précis (facultatif)', 'text', 'Ex. : grande salle, petite salle, cuisine…' );
 	$cur = vsg_meta( $post->ID, 'type' );
-	echo '<p style="margin:0 0 12px"><label for="vsg_type" style="display:block;font-weight:600;margin-bottom:4px">Type de rendez-vous</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>';
+	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Type de rendez-vous</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>';
 	echo vsg_event_type_options( $cur ); // phpcs:ignore
-	echo '</select><span style="display:block;color:#50575e;margin-top:4px">Un groupe ou une communauté : le rendez-vous s\'affiche aussi sur sa page.</span></p>';
-	echo '<p style="color:#50575e;margin:0">Cochez la paroisse ou la chapelle dans « Paroisses et lieux ». Pour un rendez-vous interne (réservation de salle, réunion d\'équipe), mettez la visibilité sur « Privé » : seules les personnes connectées le verront.</p>';
+	echo '</select><span class="vsg-hint">Un groupe ou une communauté : le rendez-vous s\'affiche aussi sur sa page.</span></p>';
+	echo '<p class="vsg-help vsg-m0">Cochez la paroisse ou la chapelle dans « Paroisses et lieux ». Pour un rendez-vous interne (réservation de salle, réunion d\'équipe), mettez la visibilité sur « Privé » : seules les personnes connectées le verront.</p>';
 }
 
 function vsg_box_feuille( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
 	$pdf = vsg_feuille_pdf( $post );
-	echo '<p style="margin-top:0">Glissez le fichier PDF dans le contenu (bloc « Fichier »), puis cochez la paroisse dans « Paroisses et lieux ».</p>';
+	echo '<p class="vsg-mt0">Glissez le fichier PDF dans le contenu (bloc « Fichier »), puis cochez la paroisse dans « Paroisses et lieux ».</p>';
 	if ( $pdf ) {
 		echo '<p><strong>PDF détecté :</strong><br><a href="' . esc_url( $pdf ) . '" target="_blank" rel="noopener">' . esc_html( wp_basename( $pdf ) ) . '</a></p>';
 	} else {
-		echo '<p style="color:#b32d2e"><strong>Aucun PDF pour l\'instant.</strong></p>';
+		echo '<p class="vsg-danger"><strong>Aucun PDF pour l\'instant.</strong></p>';
 	}
 }
 
@@ -77,21 +77,21 @@ function vsg_box_place( $post ) {
 	$is_parish = VSG_TPL_PAROISSE === get_page_template_slug( $post );
 	if ( $is_parish ) {
 		$col = vsg_meta( $post->ID, 'couleur' ) ?: vsg_parish_color( $post );
-		echo '<p style="margin:0 0 12px"><label for="vsg_couleur" style="display:block;font-weight:600;margin-bottom:4px">Couleur de la paroisse</label><input type="color" id="vsg_couleur" name="vsg_couleur" value="' . esc_attr( $col ) . '" style="width:64px;height:36px;padding:2px"> <span style="color:#50575e">Sert à repérer la paroisse sur le site (bandeau, pastilles).</span></p>';
+		echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_couleur">Couleur de la paroisse</label><input class="vsg-color" type="color" id="vsg_couleur" name="vsg_couleur" value="' . esc_attr( $col ) . '"> <span class="vsg-help">Sert à repérer la paroisse sur le site (bandeau, pastilles).</span></p>';
 		vsg_field( $post->ID, 'eglise', 'Adresse de l\'église', 'text' );
 		vsg_field( $post->ID, 'adresse', 'Adresse de l\'accueil paroissial', 'text' );
 		vsg_field( $post->ID, 'permanences', 'Permanences de l\'accueil', 'textarea', 'Une ligne par créneau.' );
 		vsg_field( $post->ID, 'telephone', 'Téléphone', 'text' );
 		vsg_field( $post->ID, 'email', 'Adresse mail (reçoit aussi les messages du formulaire)', 'email' );
-		echo '<p style="color:#50575e;margin:12px 0 0">Le résumé de la page (panneau « Extrait ») sert d\'introduction sur la page d\'accueil de la paroisse.</p>';
+		echo '<p class="vsg-help vsg-mt12">Le résumé de la page (panneau « Extrait ») sert d\'introduction sur la page d\'accueil de la paroisse.</p>';
 	} else {
 		vsg_field( $post->ID, 'adresse', 'Adresse de la chapelle', 'text' );
 		vsg_field( $post->ID, 'telephone', 'Téléphone de la chapelle (facultatif)', 'text' );
 		vsg_field( $post->ID, 'permanences', 'Permanences de l\'accueil (facultatif)', 'textarea', 'Une ligne par créneau.' );
 		vsg_field( $post->ID, 'acces', 'Accès (transports, stationnement, accessibilité)', 'textarea' );
 	}
-	echo '<h3 style="margin:18px 0 8px;padding-top:12px;border-top:1px solid #dcdcde">Horaires des messes' . ( $is_parish ? ' à l\'église' : ' à la chapelle' ) . '</h3>';
-	echo '<p style="color:#50575e;margin:0 0 10px">Une ligne par horaire, par exemple « 9 h » ou « 18 h 30 (messe anticipée) ». Laissez vide s\'il n\'y a pas de messe.</p>';
+	echo '<h3 class="vsg-sep">Horaires des messes' . ( $is_parish ? ' à l\'église' : ' à la chapelle' ) . '</h3>';
+	echo '<p class="vsg-help vsg-mb10">Une ligne par horaire, par exemple « 9 h » ou « 18 h 30 (messe anticipée) ». Laissez vide s\'il n\'y a pas de messe.</p>';
 	vsg_field( $post->ID, 'messes_semaine', 'En semaine', 'textarea', 'Ex. : Mardi et jeudi : 9 h' );
 	vsg_field( $post->ID, 'messes_samedi', 'Samedi', 'textarea' );
 	vsg_field( $post->ID, 'messes_dimanche', 'Dimanche', 'textarea' );
@@ -102,14 +102,14 @@ function vsg_box_place( $post ) {
 /** Liste des catégories : relie une page à ses actualités et rendez-vous. */
 function vsg_cat_field( $post_id, $help = '' ) {
 	$current = vsg_meta( $post_id, 'cat' );
-	echo '<p style="margin:0"><label for="vsg_cat" style="display:block;font-weight:600;margin-bottom:4px">Catégorie liée (réglage technique)</label><select id="vsg_cat" name="vsg_cat">';
+	echo '<p class="vsg-m0"><label class="vsg-label" for="vsg_cat">Catégorie liée (réglage technique)</label><select id="vsg_cat" name="vsg_cat">';
 	echo '<option value="">—</option>';
 	foreach ( get_categories( array( 'hide_empty' => false ) ) as $t ) {
 		echo '<option value="' . esc_attr( $t->slug ) . '"' . selected( $current, $t->slug, false ) . '>' . esc_html( $t->name ) . '</option>';
 	}
 	echo '</select></p>';
 	if ( $help ) {
-		echo '<p style="color:#50575e;margin:4px 0 0">' . esc_html( $help ) . '</p>';
+		echo '<p class="vsg-help vsg-mt4">' . esc_html( $help ) . '</p>';
 	}
 }
 
@@ -132,7 +132,7 @@ function vsg_box_theme( $post ) {
 
 function vsg_box_community( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
-	echo '<p style="margin-top:0;color:#50575e">La présentation et les activités se rédigent dans le contenu de la page. Le résumé (panneau « Extrait ») s\'affiche sur les cartes.</p>';
+	echo '<p class="vsg-help vsg-mt0">La présentation et les activités se rédigent dans le contenu de la page. Le résumé (panneau « Extrait ») s\'affiche sur les cartes.</p>';
 	vsg_field( $post->ID, 'programme', 'Rendez-vous réguliers', 'textarea', 'Une ligne par rendez-vous. Ex. : Mardi, 20 h : prière et adoration.' );
 	vsg_field( $post->ID, 'lieu', 'Lieu habituel', 'text', 'Ex. : église Notre-Dame de Lourdes, salle paroissiale…' );
 	vsg_field( $post->ID, 'responsable', 'Responsable ou personne à contacter', 'text' );
@@ -143,8 +143,8 @@ function vsg_box_community( $post ) {
 	vsg_field( $post->ID, 'instagram', 'Compte Instagram', 'url' );
 	vsg_field( $post->ID, 'youtube', 'Chaîne YouTube', 'url' );
 	$cur = vsg_meta( $post->ID, 'type' );
-	echo '<p style="margin:0 0 12px"><label for="vsg_type" style="display:block;font-weight:600;margin-bottom:4px">Rendez-vous affichés sur cette page</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>' . vsg_event_type_options( $cur ); // phpcs:ignore
-	echo '</select><span style="display:block;color:#50575e;margin-top:4px">Les rendez-vous de ce type s\'affichent dans le programme de la page. Une communauté ou un groupe de prière : son programme est importé à part et n\'apparaît pas dans l\'agenda du site.</span></p>';
+	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Rendez-vous affichés sur cette page</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>' . vsg_event_type_options( $cur ); // phpcs:ignore
+	echo '</select><span class="vsg-hint">Les rendez-vous de ce type s\'affichent dans le programme de la page. Une communauté ou un groupe de prière : son programme est importé à part et n\'apparaît pas dans l\'agenda du site.</span></p>';
 	vsg_cat_field( $post->ID, 'Les actualités classées dans cette catégorie s\'affichent sur la page de la communauté.' );
 }
 

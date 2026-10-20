@@ -33,19 +33,12 @@ $list  = $community->post_parent ? get_post( $community->post_parent ) : null;
 $gtype = vsg_meta( $community->ID, 'type' );
 $gtype = isset( vsg_event_types()[ $gtype ] ) ? $gtype : '';
 $gterms = array();
-$gurl   = '';
 if ( $gtype ) {
-	$args = array( 'type' => $gtype );
 	/* Un groupe présent dans les deux paroisses (la chorale) : chaque page montre sa paroisse. */
 	$shared = count( get_posts( array( 'post_type' => 'page', 'post_status' => 'publish', 'meta_key' => '_vsg_type', 'meta_value' => $gtype, 'fields' => 'ids', 'posts_per_page' => 2 ) ) ) > 1;
 	if ( $shared && $parish ) {
 		$gterms = vsg_parish_term_ids( $parish->ID );
-		$pt     = vsg_page_term( $parish->ID );
-		if ( $pt ) {
-			$args['lieu'] = $pt->slug;
-		}
 	}
-	$gurl = get_permalink() . '#programme';
 }
 ?>
 <section class="band">
@@ -79,7 +72,7 @@ if ( $gtype ) {
 					<ul class="plainlist">
 						<?php foreach ( $prog as $line ) : ?><li><?php echo esc_html( $line ); ?></li><?php endforeach; ?>
 					</ul>
-				<?php elseif ( $gurl ) : ?>
+				<?php elseif ( $gtype ) : ?>
 					<p>Toutes les dates sont dans le <a href="#programme">programme</a> ci-dessous.</p>
 				<?php else : ?>
 					<p>Les dates sont annoncées dans l'<a href="<?php echo esc_url( vsg_page_url( 'agenda' ) ); ?>">agenda</a> et la feuille paroissiale.</p>

@@ -1,0 +1,33 @@
+/* Pages d'administration du thème (tableau de bord, import, réglages, champs de saisie). */
+.vsg-label { display:block !important; font-weight:600 !important; margin-bottom:4px !important; }
+.vsg-mb12 { margin:0 0 12px !important; }
+.vsg-muted { color:#646970 !important; }
+.vsg-hint { display:block !important; color:#50575e !important; margin-top:4px !important; }
+.vsg-help { color:#50575e !important; }
+.vsg-mt32 { margin-top:32px !important; }
+.vsg-mt0 { margin-top:0 !important; }
+.vsg-danger { color:#b32d2e !important; }
+.vsg-color { width:64px !important; height:36px !important; padding:2px !important; }
+.vsg-eye__icon { width:20px !important; height:20px !important; font-size:20px !important; line-height:20px !important; margin:0 !important; vertical-align:middle !important; }
+.vsg-w900 { max-width:900px !important; }
+.vsg-mb12b { margin-bottom:12px !important; }
+.vsg-w1100 { max-width:1100px !important; }
+.vsg-sep { margin:18px 0 8px !important; padding-top:12px !important; border-top:1px solid #dcdcde !important; }
+.vsg-mt14 { margin:14px 0 0 !important; }
+.vsg-mt10 { margin:10px 0 0 !important; }
+.vsg-m0 { margin:0 !important; }
+.vsg-mt8 { margin-top:8px !important; }
+.vsg-mt16 { margin-top:16px !important; }
+.vsg-list { margin-left:1.5em !important; list-style:disc !important; }
+.vsg-ml { margin-left:1.2em !important; }
+.vsg-eye { display:inline-flex !important; align-items:center !important; justify-content:center !important; padding:0 8px !important; align-self:stretch !important; }
+.vsg-tiles { display:grid !important; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)) !important; gap:12px !important; }
+.vsg-twocol { display:grid !important; grid-template-columns:minmax(0,1fr) 360px !important; gap:32px !important; max-width:1100px !important; }
+.vsg-keyrow { display:flex !important; gap:6px !important; align-items:center !important; max-width:640px !important; }
+.vsg-tile { display:block !important; padding:16px !important; border:1px solid #c3c4c7 !important; border-radius:8px !important; text-decoration:none !important; background:#fff !important; }
+.vsg-tile__title { display:block !important; font-size:15px !important; color:#1F3A5F !important; margin-bottom:4px !important; }
+.vsg-mt4 { margin:4px 0 0 !important; }
+.vsg-mt12 { margin:12px 0 0 !important; }
+.vsg-mb10 { margin:0 0 10px !important; }
+.vsg-box { background:#fff !important; border:1px solid #c3c4c7 !important; padding:16px 20px !important; border-radius:4px !important; }
+.vsg-btn-danger { background:#b32d2e !important; border-color:#b32d2e !important; color:#fff !important; }

@@ -264,32 +264,12 @@ function vsg_au_admin_page() {
 			<tr><th scope="row">Payload URL</th><td><input type="text" class="large-text code" readonly value="<?php echo esc_attr( rest_url( 'vsg/v1/github' ) ); ?>" onclick="this.select()"></td></tr>
 			<tr><th scope="row">Content type</th><td><code>application/json</code></td></tr>
 			<tr><th scope="row">Secret</th><td>
-				<span style="display:flex;gap:6px;align-items:center;max-width:640px">
+				<span class="vsg-keyrow">
 					<input type="password" id="vsg-au-secret" class="large-text code" readonly autocomplete="off" value="<?php echo esc_attr( vsg_au_secret() ); ?>">
-					<button type="button" class="button" id="vsg-au-eye" aria-label="Afficher la clé" title="Afficher la clé" style="display:inline-flex;align-items:center;justify-content:center;padding:0 8px;align-self:stretch"><span class="dashicons dashicons-visibility" aria-hidden="true" style="width:20px;height:20px;font-size:20px;line-height:20px;margin:0;vertical-align:middle"></span></button>
+					<button type="button" class="button vsg-eye" id="vsg-au-eye" aria-label="Afficher la clé" title="Afficher la clé"><span class="dashicons dashicons-visibility vsg-eye__icon" aria-hidden="true"></span></button>
 					<button type="button" class="button" id="vsg-au-copy">Copier</button>
 				</span>
 				<p class="description">La clé reste masquée : « Copier » suffit pour la coller dans GitHub.</p>
-				<script>
-				( function () {
-					var f = document.getElementById( 'vsg-au-secret' ), eye = document.getElementById( 'vsg-au-eye' ), cp = document.getElementById( 'vsg-au-copy' );
-					eye.addEventListener( 'click', function () {
-						var show = 'password' === f.type;
-						f.type = show ? 'text' : 'password';
-						eye.firstChild.className = 'dashicons ' + ( show ? 'dashicons-hidden' : 'dashicons-visibility' );
-						eye.setAttribute( 'aria-label', show ? 'Masquer la clé' : 'Afficher la clé' );
-						eye.title = eye.getAttribute( 'aria-label' );
-					} );
-					cp.addEventListener( 'click', function () {
-						var done = function () { cp.textContent = 'Copiée'; setTimeout( function () { cp.textContent = 'Copier'; }, 2000 ); };
-						if ( navigator.clipboard && window.isSecureContext ) {
-							navigator.clipboard.writeText( f.value ).then( done );
-						} else {
-							var t = f.type; f.type = 'text'; f.select(); document.execCommand( 'copy' ); f.type = t; f.blur(); done();
-						}
-					} );
-				} )();
-				</script>
 			</td></tr>
 			<tr><th scope="row">Événements</th><td><em>Just the push event</em>, case <em>Active</em> cochée.</td></tr>
 		</table>
@@ -301,7 +281,7 @@ function vsg_au_admin_page() {
 
 		<h2>Journal</h2>
 		<?php if ( $log ) : ?>
-			<table class="widefat striped" style="max-width:900px"><thead><tr><th>Date</th><th>Origine</th><th>Résultat</th></tr></thead><tbody>
+			<table class="widefat striped vsg-w900"><thead><tr><th>Date</th><th>Origine</th><th>Résultat</th></tr></thead><tbody>
 			<?php foreach ( $log as $l ) : ?>
 				<tr><td><?php echo esc_html( $l['time'] ); ?></td><td><?php echo esc_html( array( 'github' => 'Signal GitHub', 'heure' => 'Vérification horaire', 'manuel' => 'Manuel', 'serveur' => 'Serveur' )[ $l['source'] ] ?? $l['source'] ); ?></td><td><?php echo esc_html( $l['msg'] ); ?></td></tr>
 			<?php endforeach; ?>

@@ -1,0 +1,36 @@
+name: Vérifications
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+
+      # Bloquant : une erreur de syntaxe casserait le site.
+      - name: Syntaxe PHP
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      # Bloquant : le site refuse d'installer une version dont la feuille de style est vide ou tronquée.
+      - name: Feuille de style complète
+        run: |
+          test "$(wc -c < style.css)" -gt 20000
+          grep -q '^Theme Name:' style.css
+          grep -Eq '^Version: [0-9]+\.[0-9]+\.[0-9]+$' style.css
+
+      # Informatif pour l'instant : règles de sécurité WordPress (échappement, nonces, données reçues).
+      - name: Règles de sécurité WordPress (PHPCS)
+        continue-on-error: true
+        run: |
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --quiet wp-coding-standards/wpcs:^3 dealerdirect/phpcodesniffer-composer-installer
+          "$(composer global config home)/vendor/bin/phpcs" --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput,WordPress.DB.PreparedSQL --extensions=php --report=summary .
