@@ -176,9 +176,25 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 		} elseif ( null === $ok ) {
 			$msg .= ' (Contrôle de l\'accueil impossible depuis le serveur : vérifier le site.)';
 		}
+		/* La copie d'avant permet de revenir en arrière à la main, tant que cette version reste en place. */
+		if ( false !== $ok && $backup ) {
+			update_option(
+				'vsg_update_backup',
+				array(
+					'version'   => $local,
+					'installed' => $now,
+					'sha'       => $rel['sha'],
+					'date'      => time(),
+				),
+				false
+			);
+		} else {
+			delete_option( 'vsg_update_backup' );
+		}
 	} else {
 		$err = is_wp_error( $result ) ? $result->get_error_message() : implode( ' ', array_map( 'wp_strip_all_tags', (array) $upgrader->skin->get_upgrade_messages() ) );
 		$msg = 'Échec de l\'installation de la ' . $rel['version'] . ( $err ? ' : ' . $err : '.' ) . ' Le thème ' . $local . ' reste en place.';
+		delete_option( 'vsg_update_backup' );
 	}
 	$pending = vsg_au_pending();
 	if ( $pending && ! version_compare( $pending['version'], wp_get_theme( $slug )->get( 'Version' ), '>' ) ) {
@@ -187,6 +203,14 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	delete_transient( 'vsg_au_lock' );
 	vsg_journal( $source, $msg );
 	return $msg;
+}
+
+/**
+ * Dossier de copie du thème, dans wp-content/. Le .htaccess du thème y est copié avec lui :
+ * aucun fichier PHP de la copie ne peut être appelé depuis le web.
+ */
+function vsg_au_dir( $name ) {
+	return trailingslashit( WP_CONTENT_DIR ) . $name . '/';
 }
 
 /** Initialise l'accès aux fichiers de WordPress (méthode directe sur l'hébergement). */
@@ -200,7 +224,8 @@ function vsg_au_fs() {
 }
 
 /**
- * Copie du thème installé avant la mise à jour, dans wp-content/upgrade/vsg-sauvegarde/.
+ * Copie du thème installé avant la mise à jour, dans wp-content/vsg-sauvegarde/.
+ * Hors de wp-content/upgrade/ : WordPress vide ce dossier au début de chaque installation.
  *
  * @return string Dossier de la copie, ou '' si elle n'a pas pu être faite.
  */
@@ -209,13 +234,78 @@ function vsg_au_backup( $slug ) {
 	if ( ! $fs ) {
 		return '';
 	}
-	$dir = trailingslashit( WP_CONTENT_DIR ) . 'upgrade/vsg-sauvegarde/';
+	$dir = vsg_au_dir( 'vsg-sauvegarde' );
 	$fs->delete( $dir, true );
 	if ( ! wp_mkdir_p( $dir ) || true !== copy_dir( get_theme_root( $slug ) . '/' . $slug, $dir ) ) {
 		$fs->delete( $dir, true );
 		return '';
 	}
 	return $dir;
+}
+
+/**
+ * Version précédente disponible pour un retour en arrière, ou null.
+ *
+ * @return array{version:string,installed:string,sha:string,date:int}|null
+ */
+function vsg_au_previous() {
+	$b = get_option( 'vsg_update_backup' );
+	if ( ! is_array( $b ) || empty( $b['version'] ) || empty( $b['installed'] ) ) {
+		return null;
+	}
+	/* Seulement si la version installée est toujours celle qui a remplacé la copie. */
+	if ( wp_get_theme( get_template() )->get( 'Version' ) !== $b['installed'] ) {
+		return null;
+	}
+	return is_dir( vsg_au_dir( 'vsg-sauvegarde' ) ) ? $b : null;
+}
+
+/**
+ * Revient à la version précédente (copie faite lors de la dernière installation).
+ * La version écartée est ajoutée aux versions refusées : elle ne sera plus proposée.
+ * Si l'accueil ne répond plus après le retour, la version d'avant le retour est remise.
+ */
+function vsg_au_rollback() {
+	$b = vsg_au_previous();
+	if ( ! $b ) {
+		return 'Aucune version précédente disponible.';
+	}
+	if ( get_transient( 'vsg_au_lock' ) ) {
+		return 'Une installation est déjà en cours.';
+	}
+	set_transient( 'vsg_au_lock', 1, 10 * MINUTE_IN_SECONDS );
+	$slug = get_template();
+	$fs   = vsg_au_fs();
+	if ( ! $fs ) {
+		delete_transient( 'vsg_au_lock' );
+		return 'Accès aux fichiers du site impossible : rien n\'est changé.';
+	}
+	$backup = vsg_au_dir( 'vsg-sauvegarde' );
+	$keep   = vsg_au_dir( 'vsg-avant-retour' );
+	$fs->delete( $keep, true );
+	if ( ! wp_mkdir_p( $keep ) || true !== copy_dir( get_theme_root( $slug ) . '/' . $slug, $keep ) ) {
+		delete_transient( 'vsg_au_lock' );
+		return 'Copie de la version actuelle impossible : rien n\'est changé.';
+	}
+	$who = wp_get_current_user()->display_name;
+	if ( ! vsg_au_restore( $slug, $backup ) || false === vsg_site_responds() ) {
+		vsg_au_restore( $slug, $keep );
+		$msg = 'Retour à la ' . $b['version'] . ' impossible ou site sans réponse : la ' . $b['installed'] . ' reste en place.';
+	} else {
+		$refused   = vsg_au_refused();
+		$refused[] = $b['sha'];
+		update_option( 'vsg_update_refused', array_slice( array_values( array_unique( array_filter( $refused ) ) ), -20 ), false );
+		delete_option( 'vsg_update_backup' );
+		$pending = vsg_au_pending();
+		if ( $pending && $pending['sha'] === $b['sha'] ) {
+			delete_option( 'vsg_update_pending' );
+		}
+		$msg = 'Retour à la ' . $b['version'] . ' par ' . $who . ' : la ' . $b['installed'] . ' (commit ' . substr( $b['sha'], 0, 7 ) . ') est écartée et ne sera plus proposée.';
+	}
+	$fs->delete( $keep, true );
+	delete_transient( 'vsg_au_lock' );
+	vsg_journal( 'manuel', $msg );
+	return $msg;
 }
 
 /** Remet en place la copie faite avant la mise à jour. */
@@ -353,6 +443,9 @@ function vsg_au_admin_page() {
 	if ( isset( $_POST['vsg_au_now'] ) && check_admin_referer( 'vsg_au' ) ) {
 		$notice = vsg_au_run( 'manuel' );
 	}
+	if ( isset( $_POST['vsg_au_rollback'] ) && check_admin_referer( 'vsg_au' ) ) {
+		$notice = vsg_au_rollback();
+	}
 	if ( isset( $_POST['vsg_au_install'] ) && check_admin_referer( 'vsg_au' ) ) {
 		$p      = vsg_au_pending();
 		$notice = $p && hash_equals( $p['sha'], sanitize_key( wp_unslash( $_POST['vsg_au_install'] ) ) ) ? vsg_au_run( 'accord', $p['sha'] ) : 'Cette version n\'est plus en attente.';
@@ -418,6 +511,15 @@ function vsg_au_admin_page() {
 			<?php wp_nonce_field( 'vsg_au' ); ?>
 			<p><button class="button<?php echo $p ? '' : ' button-primary'; ?>" name="vsg_au_now" value="1"><?php echo 'auto' === $mode ? 'Vérifier et installer maintenant' : 'Vérifier maintenant'; ?></button></p>
 		</form>
+		<?php $prev = vsg_au_previous(); ?>
+		<?php if ( $prev ) : ?>
+			<h2>Revenir à la version précédente</h2>
+			<p>La <?php echo esc_html( $prev['installed'] ); ?> a été installée le <?php echo esc_html( wp_date( 'j/m/Y à H:i', (int) $prev['date'] ) ); ?>. En cas de problème, vous pouvez remettre la <?php echo esc_html( $prev['version'] ); ?> telle qu'elle était juste avant. La <?php echo esc_html( $prev['installed'] ); ?> ne sera alors plus proposée ; une version corrigée le sera.</p>
+			<form method="post">
+				<?php wp_nonce_field( 'vsg_au' ); ?>
+				<p><button class="button" name="vsg_au_rollback" value="1" onclick="return confirm('Revenir à la <?php echo esc_js( $prev['version'] ); ?> ?');">Revenir à la <?php echo esc_html( $prev['version'] ); ?></button></p>
+			</form>
+		<?php endif; ?>
 
 		<h2>Mode d'installation</h2>
 		<form method="post">
