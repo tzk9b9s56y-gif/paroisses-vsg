@@ -5,10 +5,21 @@
  * - XML-RPC désactivé, comptes non énumérables, version de WordPress masquée ;
  * - en-têtes de sécurité HTTP ;
  * - pages de filtres et de confirmation exclues des moteurs de recherche ;
- * - vidéos YouTube intégrées en mode « sans cookie ».
+ * - vidéos YouTube intégrées en mode « sans cookie » ;
+ * - éditeurs de fichiers de WordPress désactivés.
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/*
+ * Pas de modification du code depuis l'administration (Apparence › Éditeur de fichiers de thème,
+ * Extensions › Éditeur) : un compte administrateur volé ne peut pas s'en servir pour injecter du code.
+ * WordPress lit ce réglage au moment de vérifier les droits, après le chargement du thème.
+ * Les mises à jour du thème ne passent pas par là et continuent de fonctionner.
+ */
+if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
+	define( 'DISALLOW_FILE_EDIT', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- constante de WordPress, nom imposé.
+}
 
 /**
  * Empreinte de l'adresse IP du visiteur (l'adresse elle-même n'est jamais conservée).
