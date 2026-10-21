@@ -17,45 +17,117 @@ define( 'VSG_GITHUB_REPO', 'tzk9b9s56y-gif/paroisses-vsg' );
 define( 'VSG_GITHUB_BRANCH', 'main' );
 
 /**
- * Version publiée sur GitHub et commit correspondant (mis en cache 1 heure).
- * Le style.css est lu dans ce commit précis, et l'archive installée est celle
- * de ce même commit : ce qui est installé est exactement ce qui a été vérifié.
+ * Dernier commit de main, sans passer par l'API de GitHub.
  *
- * @return array{version:string,sha:string}
+ * L'API est limitée à 60 appels par heure et par adresse IP ; sur un hébergement mutualisé,
+ * l'adresse est partagée et la limite vite atteinte. On lit donc d'abord la liste des branches
+ * telle que Git la publie (adresse publique du dépôt, sans limite), puis l'API en secours.
+ *
+ * @return array{sha:string,error:string}
  */
-function vsg_remote_release( $force = false ) {
-	$cached = get_site_transient( 'vsg_remote_release' );
-	if ( ! $force && is_array( $cached ) ) {
-		return $cached;
-	}
-	$rel = array(
-		'version' => '',
-		'sha'     => '',
-	);
+function vsg_github_head() {
 	$res = wp_remote_get(
+		'https://github.com/' . VSG_GITHUB_REPO . '.git/info/refs?service=git-upload-pack',
+		array( 'timeout' => 10 )
+	);
+	if ( ! is_wp_error( $res ) && 200 === wp_remote_retrieve_response_code( $res )
+		&& preg_match( '#([0-9a-f]{40}) refs/heads/' . preg_quote( VSG_GITHUB_BRANCH, '#' ) . '\n#', wp_remote_retrieve_body( $res ), $m ) ) {
+		return array(
+			'sha'   => $m[1],
+			'error' => '',
+		);
+	}
+	$first = is_wp_error( $res ) ? $res->get_error_message() : 'réponse ' . wp_remote_retrieve_response_code( $res );
+
+	$api = wp_remote_get(
 		'https://api.github.com/repos/' . VSG_GITHUB_REPO . '/commits/' . VSG_GITHUB_BRANCH,
 		array(
 			'timeout' => 10,
 			'headers' => array( 'Accept' => 'application/vnd.github.sha' ),
 		)
 	);
-	$sha = is_wp_error( $res ) ? '' : trim( wp_remote_retrieve_body( $res ) );
-	if ( 200 === wp_remote_retrieve_response_code( $res ) && preg_match( '/^[0-9a-f]{40}$/', $sha ) ) {
-		$css = wp_remote_get( 'https://raw.githubusercontent.com/' . VSG_GITHUB_REPO . '/' . $sha . '/style.css', array( 'timeout' => 10 ) );
-		if ( ! is_wp_error( $css ) && 200 === wp_remote_retrieve_response_code( $css )
-			&& preg_match( '/^\s*Version:\s*([0-9][0-9.]*)/mi', wp_remote_retrieve_body( $css ), $m ) ) {
-			$rel = array(
-				'version' => $m[1],
-				'sha'     => $sha,
-			);
-		}
+	$sha = is_wp_error( $api ) ? '' : trim( wp_remote_retrieve_body( $api ) );
+	if ( 200 === wp_remote_retrieve_response_code( $api ) && preg_match( '/^[0-9a-f]{40}$/', $sha ) ) {
+		return array(
+			'sha'   => $sha,
+			'error' => '',
+		);
 	}
-	/*
-	 * Pas de repli sur « la branche main du moment » : on n'installe que l'archive d'un commit
-	 * dont la version a été lue. Si l'API ne répond pas (limite horaire de GitHub), on réessaie
-	 * plus tard ; le signal de GitHub, lui, donne directement le commit.
-	 */
-	/* En cas d'échec complet, on réessaie dans 1 heure plutôt que 6. */
+	if ( is_wp_error( $api ) ) {
+		$why = 'GitHub injoignable (' . $api->get_error_message() . ')';
+	} elseif ( in_array( (int) wp_remote_retrieve_response_code( $api ), array( 403, 429 ), true ) && '0' === wp_remote_retrieve_header( $api, 'x-ratelimit-remaining' ) ) {
+		$why = 'limite horaire de l\'API GitHub atteinte, et dépôt illisible (' . $first . ')';
+	} else {
+		$why = 'dernier commit introuvable (dépôt : ' . $first . ', API : réponse ' . wp_remote_retrieve_response_code( $api ) . ')';
+	}
+	return array(
+		'sha'   => '',
+		'error' => $why,
+	);
+}
+
+/**
+ * Lit et contrôle le style.css d'un commit : fichier complet et numéro de version lisible.
+ *
+ * @return array{version:string,error:string}
+ */
+function vsg_github_css( $sha ) {
+	$res = wp_remote_get( 'https://raw.githubusercontent.com/' . VSG_GITHUB_REPO . '/' . $sha . '/style.css', array( 'timeout' => 15 ) );
+	if ( is_wp_error( $res ) ) {
+		return array(
+			'version' => '',
+			'error'   => 'feuille de style injoignable (' . $res->get_error_message() . ')',
+		);
+	}
+	if ( 200 !== wp_remote_retrieve_response_code( $res ) ) {
+		return array(
+			'version' => '',
+			'error'   => 'feuille de style introuvable (réponse ' . wp_remote_retrieve_response_code( $res ) . ')',
+		);
+	}
+	$css = wp_remote_retrieve_body( $res );
+	/* Feuille de style complète : en-tête du thème et règles CSS (une feuille vide ou tronquée est refusée). */
+	if ( strlen( $css ) < 20000 || false === stripos( $css, 'Theme Name:' ) || substr_count( $css, '{' ) < 200 ) {
+		return array(
+			'version' => '',
+			'error'   => 'feuille de style incomplète (' . strlen( $css ) . ' octets)',
+		);
+	}
+	if ( ! preg_match( '/^\s*Version:\s*([0-9][0-9.]*)/mi', $css, $m ) ) {
+		return array(
+			'version' => '',
+			'error'   => 'numéro de version illisible',
+		);
+	}
+	return array(
+		'version' => $m[1],
+		'error'   => '',
+	);
+}
+
+/**
+ * Version publiée sur GitHub et commit correspondant (mis en cache 1 heure, 15 minutes après un échec).
+ * Le style.css est lu dans ce commit précis, et l'archive installée est celle de ce même commit :
+ * ce qui est installé est exactement ce qui a été vérifié.
+ *
+ * @return array{version:string,sha:string,error:string}
+ */
+function vsg_remote_release( $force = false ) {
+	$cached = get_site_transient( 'vsg_remote_release' );
+	if ( ! $force && is_array( $cached ) && isset( $cached['error'] ) ) {
+		return $cached;
+	}
+	$head = vsg_github_head();
+	$rel  = array(
+		'version' => '',
+		'sha'     => $head['sha'],
+		'error'   => $head['error'],
+	);
+	if ( $head['sha'] ) {
+		$css            = vsg_github_css( $head['sha'] );
+		$rel['version'] = $css['version'];
+		$rel['error']   = $css['error'];
+	}
 	set_site_transient( 'vsg_remote_release', $rel, $rel['version'] ? HOUR_IN_SECONDS : 15 * MINUTE_IN_SECONDS );
 	return $rel;
 }

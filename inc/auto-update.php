@@ -5,7 +5,9 @@
  * - Signal de GitHub (webhook) à chaque envoi sur main : installation dans la minute.
  *   Le signal est signé avec une clé secrète (en-tête X-Hub-Signature-256) : sans la
  *   bonne clé, il est refusé.
- * - Filet de sécurité : vérification et installation toutes les heures.
+ * - Filet de sécurité : vérification et installation toutes les heures (dernier commit lu sans l'API
+ *   de GitHub, limitée sur un hébergement mutualisé).
+ * - Tout échec ou signal ignoré est noté au journal avec sa raison.
  * - Avant d'installer : numéro de version supérieur et feuille de style complète,
  *   sinon rien n'est installé.
  *
@@ -26,25 +28,6 @@ function vsg_au_secret() {
 
 
 /**
- * Vérifie le style.css d'un commit : version lisible et fichier complet.
- *
- * @return string Version, ou '' si le fichier ne convient pas.
- */
-function vsg_au_check_css( $sha ) {
-	$ref = $sha ? $sha : VSG_GITHUB_BRANCH;
-	$res = wp_remote_get( 'https://raw.githubusercontent.com/' . VSG_GITHUB_REPO . '/' . $ref . '/style.css' . ( $sha ? '' : '?t=' . time() ), array( 'timeout' => 15 ) );
-	if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
-		return '';
-	}
-	$css = wp_remote_retrieve_body( $res );
-	/* Feuille de style complète : en-tête du thème et règles CSS (une feuille vide ou tronquée est refusée). */
-	if ( strlen( $css ) < 20000 || false === stripos( $css, 'Theme Name:' ) || substr_count( $css, '{' ) < 200 ) {
-		return '';
-	}
-	return preg_match( '/^\s*Version:\s*([0-9][0-9.]*)/mi', $css, $m ) ? $m[1] : '';
-}
-
-/**
  * Cherche la dernière version et l'installe si elle est plus récente et complète.
  *
  * @param string $source « github », « heure » ou « manuel ».
@@ -59,21 +42,19 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	$slug  = get_template();
 	$local = wp_get_theme( $slug )->get( 'Version' );
 	if ( $sha && preg_match( '/^[0-9a-f]{40}$/', $sha ) ) {
+		$css = vsg_github_css( $sha );
 		$rel = array(
-			'version' => vsg_au_check_css( $sha ),
+			'version' => $css['version'],
 			'sha'     => $sha,
+			'error'   => $css['error'],
 		);
 	} else {
-		delete_site_transient( 'vsg_remote_release' );
 		$rel = vsg_remote_release( true );
-		if ( $rel['version'] ) {
-			$rel['version'] = vsg_au_check_css( $rel['sha'] ) ? $rel['version'] : '';
-		}
 	}
 
-	if ( ! $rel['version'] || empty( $rel['sha'] ) ) {
+	if ( ! $rel['version'] || ! $rel['sha'] ) {
 		delete_transient( 'vsg_au_lock' );
-		$msg = 'Version de GitHub illisible ou feuille de style incomplète : rien n\'est installé.';
+		$msg = 'Rien n\'est installé : ' . $rel['error'] . '.';
 		vsg_journal( $source, $msg );
 		return $msg;
 	}
@@ -181,6 +162,61 @@ add_action(
 	}
 );
 
+/**
+ * Signal de GitHub. Les deux formats de GitHub sont acceptés (JSON, ou formulaire avec un champ « payload »).
+ * Tout signal refusé ou ignoré est noté au journal avec sa raison ; une signature invalide au plus une fois
+ * par heure, pour qu'un tiers ne puisse pas remplir le journal.
+ */
+function vsg_au_webhook( WP_REST_Request $req ) {
+	$reply = function ( $code, $message ) {
+		return new WP_REST_Response(
+			array(
+				'ok'      => $code < 400,
+				'message' => $message,
+			),
+			$code
+		);
+	};
+	$raw   = $req->get_body();
+	$sig   = (string) $req->get_header( 'x_hub_signature_256' );
+	$calc  = 'sha256=' . hash_hmac( 'sha256', $raw, vsg_au_secret() );
+	if ( ! $sig || ! hash_equals( $calc, $sig ) ) {
+		if ( ! get_transient( 'vsg_au_badsig' ) ) {
+			set_transient( 'vsg_au_badsig', 1, HOUR_IN_SECONDS );
+			vsg_journal( 'github', 'Signal refusé : signature invalide. La clé du webhook dans GitHub doit être celle de cette page.' );
+		}
+		return $reply( 401, 'Signature invalide.' );
+	}
+	$event = (string) $req->get_header( 'x_github_event' );
+	if ( 'ping' === $event ) {
+		vsg_journal( 'github', 'Liaison avec GitHub établie.' );
+		return $reply( 200, 'Liaison établie.' );
+	}
+	$data = json_decode( $raw, true );
+	if ( ! is_array( $data ) ) {
+		parse_str( $raw, $form );
+		$data = isset( $form['payload'] ) ? json_decode( (string) $form['payload'], true ) : null;
+	}
+	if ( 'push' !== $event ) {
+		vsg_journal( 'github', 'Signal ignoré : événement « ' . sanitize_key( $event ) . ' » (seul « push » déclenche une installation).' );
+		return $reply( 200, 'Ignoré : événement ' . $event . '.' );
+	}
+	if ( ! is_array( $data ) ) {
+		vsg_journal( 'github', 'Signal ignoré : contenu illisible.' );
+		return $reply( 200, 'Ignoré : contenu illisible.' );
+	}
+	$ref = (string) ( $data['ref'] ?? '' );
+	if ( 'refs/heads/' . VSG_GITHUB_BRANCH !== $ref ) {
+		vsg_journal( 'github', 'Signal ignoré : envoi sur « ' . sanitize_text_field( $ref ) . ' », seule la branche ' . VSG_GITHUB_BRANCH . ' est installée.' );
+		return $reply( 200, 'Ignoré : autre branche.' );
+	}
+	$sha = (string) ( $data['after'] ?? '' );
+	/* L'installation prend plus de temps que GitHub n'en accorde : elle part en tâche de fond. */
+	wp_schedule_single_event( time(), 'vsg_au_event', array( 'github', $sha ) );
+	spawn_cron();
+	return $reply( 202, 'Installation programmée.' );
+}
+
 /* Point de réception du signal de GitHub : /wp-json/vsg/v1/github */
 add_action(
 	'rest_api_init',
@@ -191,51 +227,7 @@ add_action(
 			array(
 				'methods'             => 'POST',
 				'permission_callback' => '__return_true', // La signature est vérifiée dans le traitement.
-				'callback'            => function ( WP_REST_Request $req ) {
-					$sig  = (string) $req->get_header( 'x_hub_signature_256' );
-					$calc = 'sha256=' . hash_hmac( 'sha256', $req->get_body(), vsg_au_secret() );
-					if ( ! $sig || ! hash_equals( $calc, $sig ) ) {
-						return new WP_REST_Response(
-							array(
-								'ok'      => false,
-								'message' => 'Signature invalide.',
-							),
-							401
-						);
-					}
-					$event = (string) $req->get_header( 'x_github_event' );
-					if ( 'ping' === $event ) {
-						vsg_journal( 'github', 'Liaison avec GitHub établie.' );
-						return new WP_REST_Response(
-							array(
-								'ok'      => true,
-								'message' => 'Liaison établie.',
-							),
-							200
-						);
-					}
-					$data = json_decode( $req->get_body(), true );
-					if ( 'push' !== $event || ! is_array( $data ) || 'refs/heads/' . VSG_GITHUB_BRANCH !== ( $data['ref'] ?? '' ) ) {
-						return new WP_REST_Response(
-							array(
-								'ok'      => true,
-								'message' => 'Ignoré.',
-							),
-							200
-						);
-					}
-					$sha = (string) ( $data['after'] ?? '' );
-					/* L'installation prend plus de temps que GitHub n'en accorde : elle part en tâche de fond. */
-					wp_schedule_single_event( time(), 'vsg_au_event', array( 'github', $sha ) );
-					spawn_cron();
-					return new WP_REST_Response(
-						array(
-							'ok'      => true,
-							'message' => 'Installation programmée.',
-						),
-						202
-					);
-				},
+				'callback'            => 'vsg_au_webhook',
 			)
 		);
 	}
@@ -270,7 +262,7 @@ function vsg_au_admin_page() {
 	<div class="wrap">
 		<h1>Mises à jour du thème</h1>
 		<?php if ( $notice ) : ?><div class="notice notice-info"><p><?php echo esc_html( $notice ); ?></p></div><?php endif; ?>
-		<p>Version installée : <strong><?php echo esc_html( $local ); ?></strong> · Version sur GitHub : <strong><?php echo esc_html( $rel['version'] ? $rel['version'] : '?' ); ?></strong>
+		<p>Version installée : <strong><?php echo esc_html( $local ); ?></strong> · Version sur GitHub : <strong><?php echo esc_html( $rel['version'] ? $rel['version'] : '?' ); ?></strong><?php echo ( ! $rel['version'] && ! empty( $rel['error'] ) ) ? ' (' . esc_html( $rel['error'] ) . ')' : ''; ?>
 		<?php if ( $next ) : ?>· Prochaine vérification automatique : <?php echo esc_html( wp_date( 'H:i', $next ) ); ?><?php endif; ?></p>
 		<form method="post">
 			<?php wp_nonce_field( 'vsg_au' ); ?>
