@@ -12,6 +12,7 @@ function vsg_journal_sources() {
 		'github'  => 'Signal GitHub',
 		'heure'   => 'Vérification horaire',
 		'manuel'  => 'Manuel',
+		'accord'  => 'Votre accord',
 		'serveur' => 'Serveur',
 	);
 }

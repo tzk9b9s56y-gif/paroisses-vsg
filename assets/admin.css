@@ -31,3 +31,6 @@
 .vsg-mb10 { margin:0 0 10px !important; }
 .vsg-box { background:#fff !important; border:1px solid #c3c4c7 !important; padding:16px 20px !important; border-radius:4px !important; }
 .vsg-btn-danger { background:#b32d2e !important; border-color:#b32d2e !important; color:#fff !important; }
+.vsg-pending { border-left: 4px solid #dba617 !important; margin: 16px 0 !important; max-width: 900px !important; }
+.vsg-pending .form-table th { width: 220px; }
+.vsg-pending__actions { display: flex !important; flex-wrap: wrap; gap: 8px; margin-top: 12px !important; }

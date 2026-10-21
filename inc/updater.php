@@ -151,7 +151,9 @@ add_filter(
 			/* Archive du commit dont la version a été lue, et non l'état de main au moment du téléchargement. */
 			'package'     => $rel['sha'] ? 'https://github.com/' . VSG_GITHUB_REPO . '/archive/' . $rel['sha'] . '.zip' : '',
 		);
-		if ( $remote && version_compare( $remote, $local, '>' ) ) {
+		/* Après accord : WordPress ne propose jamais la version lui-même ; seule la page Mises à jour du thème l'installe. */
+		$allowed = 'auto' === vsg_au_mode() || ! empty( $GLOBALS['vsg_au_installing'] );
+		if ( $allowed && $remote && version_compare( $remote, $local, '>' ) ) {
 			$transient->response[ $slug ] = $item;
 		} else {
 			unset( $transient->response[ $slug ] );
