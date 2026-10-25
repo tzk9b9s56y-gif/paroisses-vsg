@@ -11,6 +11,7 @@ const VSG_COMMON_CAT      = 'les-deux-paroisses';
 const VSG_TPL_COMMUNAUTE  = 'templates/communaute.php';
 const VSG_TPL_COMMUNAUTES = 'templates/communautes.php';
 const VSG_TPL_HORAIRES    = 'templates/horaires.php';
+const VSG_TPL_MOT_CURE    = 'templates/mot-du-cure.php';
 
 require __DIR__ . '/helpers/dates.php';
 require __DIR__ . '/helpers/lieux.php';
@@ -20,3 +21,4 @@ require __DIR__ . '/helpers/groupes.php';
 require __DIR__ . '/helpers/rendu.php';
 require __DIR__ . '/helpers/fil-ariane.php';
 require __DIR__ . '/helpers/pages.php';
+require __DIR__ . '/helpers/cure.php';

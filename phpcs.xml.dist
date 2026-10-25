@@ -65,6 +65,7 @@
 				<element value="vsg_communities_menu"/>
 				<element value="vsg_filters"/>
 				<element value="vsg_months_list"/>
+				<element value="vsg_cure_html"/>
 			</property>
 		</properties>
 	</rule>

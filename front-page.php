@@ -42,11 +42,13 @@ $intro = trim( get_the_content() );
 </section>
 
 <?php
-$home_id  = get_the_ID();
-$cure_mot = trim( vsg_meta( $home_id, 'cure_mot' ) );
-/* Texte modèle entre crochets (« [Mot du curé à rédiger…] ») : non affiché. */
-if ( '' !== $cure_mot && '[' === $cure_mot[0] ) {
-	$cure_mot = '';
+$home_id    = get_the_ID();
+$cure_mot   = vsg_cure_text();
+$cure_paras = vsg_cure_paragraphs( $cure_mot );
+$cure_intro = vsg_cure_intro( $cure_paras );
+$cure_page  = count( $cure_intro ) < count( $cure_paras ) ? vsg_cure_page() : null;
+if ( ! $cure_page ) {
+	$cure_intro = $cure_paras;
 }
 ?>
 <?php if ( $cure_mot || vsg_meta( $home_id, 'cure_nom' ) ) : ?>
@@ -56,8 +58,12 @@ if ( '' !== $cure_mot && '[' === $cure_mot[0] ) {
 			<div class="curebox__photo"><?php echo vsg_meta( $home_id, 'cure_photo' ) ? '<img src="' . esc_url( vsg_meta( $home_id, 'cure_photo' ) ) . '" alt="">' : '<div class="ph"><span>Photo</span></div>'; ?></div>
 			<div class="curebox__text">
 				<h2><?php echo $cure_mot ? 'Le mot du curé' : 'Votre curé'; ?></h2>
-				<?php echo $cure_mot ? wpautop( esc_html( $cure_mot ) ) : ''; ?>
-				<?php if ( vsg_meta( $home_id, 'cure_nom' ) ) : ?><p class="curebox__sign"><?php echo esc_html( vsg_meta( $home_id, 'cure_nom' ) ); ?></p><?php endif; ?>
+				<?php echo vsg_cure_html( $cure_intro ); ?>
+				<?php if ( $cure_page ) : ?>
+					<p class="morelink"><a href="<?php echo esc_url( get_permalink( $cure_page ) ); ?>">Lire le mot du curé en entier</a></p>
+				<?php elseif ( vsg_meta( $home_id, 'cure_nom' ) ) : ?>
+					<p class="curebox__sign"><?php echo esc_html( vsg_meta( $home_id, 'cure_nom' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 		<?php
 		$pretres = array_values( array_filter( array_map( 'trim', explode( "\n", vsg_meta( $home_id, 'pretres' ) ) ) ) );

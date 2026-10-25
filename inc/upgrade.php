@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const VSG_CONTENT_VERSION = '0.9.25';
+const VSG_CONTENT_VERSION = '0.9.32';
 
 add_action(
 	'init',
@@ -30,6 +30,7 @@ add_action(
 			'0.9.17' => 'vsg_upgrade_0917',
 			'0.9.18' => 'vsg_upgrade_0918',
 			'0.9.25' => 'vsg_upgrade_0925',
+			'0.9.32' => 'vsg_upgrade_0932',
 		);
 		foreach ( $steps as $ver => $fn ) {
 			if ( version_compare( $done, $ver, '<' ) ) {
@@ -368,4 +369,23 @@ function vsg_upgrade_0925() {
 
 	vsg_secrets_migrate();
 	vsg_htaccess_write();
+}
+
+/** 0.9.32 : page « Le mot du curé » (texte complet ; il se saisit toujours dans la page d'accueil). */
+function vsg_upgrade_0932() {
+	if ( vsg_cure_page() || get_page_by_path( 'mot-du-cure' ) ) {
+		return;
+	}
+	$id = wp_insert_post(
+		array(
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_title'   => 'Le mot du curé',
+			'post_name'    => 'mot-du-cure',
+			'post_excerpt' => 'Le mot du curé de l\'Ensemble paroissial Notre-Dame de Lourdes – Sainte-Geneviève pour l\'année pastorale.',
+		)
+	);
+	if ( $id && ! is_wp_error( $id ) ) {
+		update_post_meta( $id, '_wp_page_template', VSG_TPL_MOT_CURE );
+	}
 }
