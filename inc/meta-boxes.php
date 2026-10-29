@@ -20,7 +20,7 @@ add_action(
 				add_meta_box( 'vsg_place', 'Coordonnées affichées sur le site', 'vsg_box_place', 'page', 'normal', 'high' );
 			}
 			if ( (int) get_option( 'page_on_front' ) === (int) $post->ID ) {
-				add_meta_box( 'vsg_cure', 'Le mot du curé (affiché sur l\'accueil)', 'vsg_box_cure', 'page', 'normal', 'high' );
+				add_meta_box( 'vsg_cure', 'Le curé (affiché sur l\'accueil)', 'vsg_box_cure', 'page', 'normal', 'high' );
 				add_meta_box( 'vsg_theme', 'Thème de l\'année (bannière de la page d\'accueil)', 'vsg_box_theme', 'page', 'normal', 'high' );
 			}
 			if ( VSG_TPL_COMMUNAUTE === $tpl ) {
@@ -114,8 +114,11 @@ function vsg_cat_field( $post_id, $help = '' ) {
 
 function vsg_box_cure( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
+	$page = vsg_cure_page();
+	if ( $page ) {
+		echo '<p class="vsg-help">Le mot du curé se rédige dans sa propre page : <a href="' . esc_url( (string) get_edit_post_link( $page->ID ) ) . '">modifier la page « Le mot du curé »</a>. Le début s\'affiche sur l\'accueil.</p>';
+	}
 	vsg_field( $post->ID, 'cure_nom', 'Nom du curé', 'text', 'Ex. : Père Jean Dupont, curé' );
-	vsg_field( $post->ID, 'cure_mot', 'Texte du mot du curé', 'textarea' );
 	vsg_field( $post->ID, 'cure_photo', 'Adresse de la photo du curé (copiée depuis la médiathèque)', 'url' );
 	vsg_field( $post->ID, 'cure_tel', 'Téléphone direct du curé (facultatif : vide = rien n\'est affiché)', 'text' );
 	vsg_field( $post->ID, 'cure_email', 'Mail direct du curé', 'email' );
@@ -172,7 +175,6 @@ add_action(
 			'cat'                => 'slug',
 			'couleur'            => 'color',
 			'cure_nom'           => 'text',
-			'cure_mot'           => 'textarea',
 			'cure_photo'         => 'url',
 			'cure_tel'           => 'text',
 			'theme_titre'        => 'text',

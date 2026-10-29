@@ -42,14 +42,12 @@ $intro = trim( get_the_content() );
 </section>
 
 <?php
-$home_id    = get_the_ID();
-$cure_mot   = vsg_cure_text();
-$cure_paras = vsg_cure_paragraphs( $cure_mot );
-$cure_intro = vsg_cure_intro( $cure_paras );
-$cure_page  = count( $cure_intro ) < count( $cure_paras ) ? vsg_cure_page() : null;
-if ( ! $cure_page ) {
-	$cure_intro = $cure_paras;
-}
+$home_id     = get_the_ID();
+$cure_page   = vsg_cure_page();
+$cure_pieces = vsg_cure_pieces( $cure_page );
+$cure_intro  = vsg_cure_intro( $cure_pieces );
+$cure_more   = count( $cure_intro ) < count( $cure_pieces );
+$cure_mot    = (bool) $cure_pieces;
 ?>
 <?php if ( $cure_mot || vsg_meta( $home_id, 'cure_nom' ) ) : ?>
 <section class="band band--tight">
@@ -59,7 +57,7 @@ if ( ! $cure_page ) {
 			<div class="curebox__text">
 				<h2><?php echo $cure_mot ? 'Le mot du curé' : 'Votre curé'; ?></h2>
 				<?php echo vsg_cure_html( $cure_intro ); ?>
-				<?php if ( $cure_page ) : ?>
+				<?php if ( $cure_more ) : ?>
 					<p class="morelink"><a href="<?php echo esc_url( get_permalink( $cure_page ) ); ?>">Lire le mot du curé en entier</a></p>
 				<?php elseif ( vsg_meta( $home_id, 'cure_nom' ) ) : ?>
 					<p class="curebox__sign"><?php echo esc_html( vsg_meta( $home_id, 'cure_nom' ) ); ?></p>

@@ -2,8 +2,8 @@
 /**
  * Template Name: Mot du curé
  *
- * Texte complet du mot du curé. Il se saisit dans la page d'accueil (encadré « Le mot du curé ») :
- * cette page n'a rien à remplir.
+ * Texte complet du mot du curé, rédigé dans cette page. Le nom et la photo du curé
+ * viennent de la page d'accueil (encadré « Le curé »).
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 get_header();
 the_post();
 $home_id    = (int) get_option( 'page_on_front' );
-$cure_paras = vsg_cure_paragraphs( vsg_cure_text() );
+$cure_paras = vsg_cure_pieces( get_post() );
 $cure_photo = vsg_meta( $home_id, 'cure_photo' );
 ?>
 <section class="band band--tight">

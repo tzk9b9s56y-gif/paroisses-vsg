@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const VSG_CONTENT_VERSION = '0.9.32';
+const VSG_CONTENT_VERSION = '0.9.33';
 
 add_action(
 	'init',
@@ -31,6 +31,7 @@ add_action(
 			'0.9.18' => 'vsg_upgrade_0918',
 			'0.9.25' => 'vsg_upgrade_0925',
 			'0.9.32' => 'vsg_upgrade_0932',
+			'0.9.33' => 'vsg_upgrade_0933',
 		);
 		foreach ( $steps as $ver => $fn ) {
 			if ( version_compare( $done, $ver, '<' ) ) {
@@ -387,5 +388,45 @@ function vsg_upgrade_0932() {
 	);
 	if ( $id && ! is_wp_error( $id ) ) {
 		update_post_meta( $id, '_wp_page_template', VSG_TPL_MOT_CURE );
+	}
+}
+
+/**
+ * 0.9.33 : le mot du curé passe du champ de la page d'accueil au contenu de sa page.
+ * L'ancien contenu de la page reste dans ses révisions ; le champ est ensuite vidé.
+ */
+function vsg_upgrade_0933() {
+	$home = (int) get_option( 'page_on_front' );
+	$text = $home ? trim( (string) get_post_meta( $home, '_vsg_cure_mot', true ) ) : '';
+	if ( '' === $text || '[' === $text[0] ) {
+		if ( $home ) {
+			delete_post_meta( $home, '_vsg_cure_mot' );
+		}
+		return;
+	}
+	vsg_upgrade_0932();
+	$page = vsg_cure_page();
+	if ( ! $page ) {
+		return;
+	}
+	$blocks = array();
+	foreach ( preg_split( '/\R+/u', $text ) as $para ) {
+		$para = trim( $para );
+		if ( '' !== $para ) {
+			$blocks[] = "<!-- wp:paragraph -->\n<p>" . htmlspecialchars( $para, ENT_NOQUOTES, 'UTF-8' ) . "</p>\n<!-- /wp:paragraph -->";
+		}
+	}
+	if ( trim( (string) $page->post_content ) && ! wp_get_post_revisions( $page->ID ) ) {
+		wp_save_post_revision( $page->ID );
+	}
+	$done = wp_update_post(
+		array(
+			'ID'           => $page->ID,
+			'post_content' => implode( "\n\n", $blocks ),
+		),
+		true
+	);
+	if ( $done && ! is_wp_error( $done ) ) {
+		delete_post_meta( $home, '_vsg_cure_mot' );
 	}
 }
