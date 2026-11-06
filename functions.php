@@ -36,7 +36,9 @@ require VSG_DIR . '/inc/dons.php';
 require VSG_DIR . '/inc/messes.php';
 
 /* Administration et mises à jour. */
+require VSG_DIR . '/inc/roles.php';
 require VSG_DIR . '/inc/admin.php';
+require VSG_DIR . '/inc/ergonomie.php';
 require VSG_DIR . '/inc/a-completer.php';
 require VSG_DIR . '/inc/updater.php';
 require VSG_DIR . '/inc/auto-update.php';

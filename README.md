@@ -20,6 +20,17 @@ Thème WordPress classique pour le site commun des paroisses Notre-Dame de Lourd
 - **Rattachement** : chaque contenu est classé dans une catégorie (« Paroisses et lieux »). Une catégorie par paroisse, les chapelles en sous-catégories, plus « Les deux paroisses » qui s'affiche partout. Chaque page paroisse ou chapelle indique sa catégorie dans « Coordonnées affichées sur le site ».
 - **Contact** : formulaire intégré (`inc/contact.php`), envoi par `wp_mail` à l'adresse de la paroisse, rien n'est stocké.
 
+## Administration : administrateur et secrétariat
+
+- **Rôle « Secrétariat »** (inc/roles.php) : pages (dont le mot du curé et les fiches des lieux), actualités, agenda et son import, feuilles paroissiales, médias. Pas d'accès aux thèmes, extensions, comptes, réglages, à la maintenance, aux mises à jour ni aux catégories « Paroisses et lieux ». Pas de HTML libre, contrairement au rôle « Éditeur » de WordPress. À attribuer au compte du secrétariat : Comptes › Modifier › Rôle « Secrétariat ».
+- **Ergonomie** (inc/ergonomie.php) :
+  - menu dans l'ordre d'usage (Agenda, Actualités, Feuilles, puis Pages, Médias) ;
+  - formulaire simple pour les rendez-vous, avec « Date et lieu » juste sous le titre ;
+  - encadré « comment faire » sur chaque écran de saisie, exemples dans les champs ;
+  - alerte pour un rendez-vous sans date ou sans paroisse ;
+  - brouillons en cours sur le tableau de bord ;
+  - page de connexion aux couleurs des paroisses.
+
 ## Organisation des fichiers
 
 ```
@@ -54,7 +65,9 @@ inc/contact.php        formulaire de contact
 inc/intentions.php     intentions de prière
 inc/dons.php           dons (réglages, formulaire)
 inc/messes.php         demandes de messe
+inc/roles.php          rôle Secrétariat
 inc/admin.php          tableau de bord simplifié
+inc/ergonomie.php      menu, formulaires guidés, alertes, page de connexion
 inc/a-completer.php    pages encore à rédiger
 inc/updater.php        version publiée sur GitHub
 inc/auto-update.php    installation automatique, sauvegarde et retour arrière
