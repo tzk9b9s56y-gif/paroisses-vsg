@@ -42,3 +42,5 @@
 #vsg_event .inside { display:grid !important; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)) !important; gap:0 16px !important; }
 #vsg_event .inside > input[type=hidden] { display:none !important; }
 #vsg_event .inside > .vsg-help { grid-column:1 / -1 !important; }
+.vsg-links { margin:6px 0 0 !important; }
+.vsg-links li { margin:6px 0 !important; }

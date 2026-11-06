@@ -49,12 +49,7 @@ add_action(
 				$menu[ $i ][0] = 'Comptes'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- libellé du menu de WordPress.
 			}
 		}
-		/* « Ajouter » en double dans chaque menu : le bouton en haut de la liste suffit. */
-		remove_submenu_page( 'edit.php?post_type=evenement', 'post-new.php?post_type=evenement' );
-		remove_submenu_page( 'edit.php', 'post-new.php' );
-		remove_submenu_page( 'edit.php?post_type=feuille', 'post-new.php?post_type=feuille' );
-		remove_submenu_page( 'edit.php?post_type=page', 'post-new.php?post_type=page' );
-		remove_submenu_page( 'upload.php', 'media-new.php' );
+		/* Les entrées « Ajouter » restent : le guide de la secrétaire s'appuie dessus (Agenda › Ajouter un rendez-vous…). */
 		remove_submenu_page( 'edit.php', 'edit-tags.php?taxonomy=post_tag' );
 		/* Secrétariat : pas d'outils d'export / import de WordPress (l'import de l'agenda reste dans « Agenda »). */
 		if ( vsg_is_secretariat() ) {
@@ -124,20 +119,7 @@ add_filter(
 	2
 );
 
-/* « Image mise en avant » : on dit à quoi elle sert. */
-foreach ( array( 'evenement', 'post', 'page' ) as $vsg_type ) {
-	add_filter(
-		'post_type_labels_' . $vsg_type,
-		function ( $l ) {
-			$l->featured_image        = 'Image ou affiche (carte et en-tête)';
-			$l->set_featured_image    = 'Choisir l\'image';
-			$l->remove_featured_image = 'Retirer l\'image';
-			$l->use_featured_image    = 'Utiliser comme image';
-			return $l;
-		}
-	);
-}
-unset( $vsg_type );
+/* « Image mise en avant » garde son nom de WordPress : c'est celui du guide de la secrétaire. */
 
 /**
  * Aide affichée en haut de l'écran de saisie : [ titre, étapes ].
@@ -152,7 +134,7 @@ function vsg_help_steps() {
 				'Écrivez le <strong>nom</strong> du rendez-vous.',
 				'Remplissez <strong>Date et lieu</strong>, juste en dessous (heure facultative ; type si c\'est un groupe ou une communauté).',
 				'Écrivez les détails dans le grand champ de texte (facultatif).',
-				'À droite : cochez la <strong>paroisse ou la chapelle</strong> dans « Paroisses et lieux », et choisissez une <strong>image</strong> si vous en avez une.',
+				'À droite : cochez la <strong>paroisse ou la chapelle</strong> dans « Paroisses et lieux », et une image dans « Image mise en avant » si vous en avez une.',
 				'Cliquez sur <strong>Publier</strong>. Le rendez-vous apparaît dans l\'agenda à sa date. Pour un rendez-vous interne, mettez la visibilité sur « Privé ».',
 			),
 		),
@@ -160,7 +142,7 @@ function vsg_help_steps() {
 			'Publier une actualité',
 			array(
 				'Écrivez le <strong>titre</strong> puis le texte.',
-				'Dans le panneau de droite, onglet « Article » : cochez la <strong>paroisse</strong> dans « Paroisses et lieux » (ou « Les deux paroisses ») et choisissez l\'<strong>image</strong>.',
+				'Dans le panneau de droite, onglet « Article » : cochez la <strong>paroisse</strong> dans « Paroisses et lieux » (ou « Les deux paroisses ») ; image facultative dans « Image mise en avant ».',
 				'Cliquez sur <strong>Publier</strong>.',
 			),
 		),
@@ -256,13 +238,22 @@ add_action(
 	'wp_dashboard_setup',
 	function () {
 		wp_add_dashboard_widget( 'vsg_brouillons', 'Brouillons en cours', 'vsg_dashboard_drafts', null, null, 'side' );
+		/* Panneaux de WordPress sans intérêt pour l'équipe : actualités et événements WordPress, brouillon rapide. */
+		remove_meta_box( 'dashboard_primary', 'dashboard', 'side' );
+		remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
 		if ( vsg_is_secretariat() ) {
 			remove_meta_box( 'dashboard_right_now', 'dashboard', 'normal' );
 		}
 	},
 	20
 );
-remove_action( 'welcome_panel', 'wp_welcome_panel' );
+/* Panneau « Bienvenue sur WordPress ! » : WordPress l'ajoute après le chargement du thème, on le retire ensuite. */
+add_action(
+	'admin_init',
+	function () {
+		remove_action( 'welcome_panel', 'wp_welcome_panel' );
+	}
+);
 
 function vsg_dashboard_drafts() {
 	$drafts = get_posts(

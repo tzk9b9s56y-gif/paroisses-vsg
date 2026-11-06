@@ -45,6 +45,50 @@ function vsg_dashboard_actions() {
 		echo '<span class="vsg-help">' . esc_html( $a[2] ) . '</span></a>';
 	}
 	echo '</div>';
+
+	/* Moins fréquent (guide de la secrétaire, partie 3) : liens directs plutôt qu'une recherche dans les menus. */
+	$lieux = array();
+	foreach ( vsg_parishes() as $p ) {
+		$lieux[] = $p;
+		foreach ( vsg_chapels( $p->ID ) as $c ) {
+			$lieux[] = $c;
+		}
+	}
+	$cure = vsg_cure_page();
+	echo '<h3 class="vsg-mt14">Moins souvent</h3><ul class="vsg-links">';
+	if ( $lieux ) {
+		echo '<li><strong>Horaires des messes et coordonnées :</strong> ';
+		$liens = array();
+		foreach ( $lieux as $l ) {
+			$liens[] = '<a href="' . esc_url( (string) get_edit_post_link( $l ) ) . '">' . esc_html( get_the_title( $l ) ) . '</a>';
+		}
+		echo wp_kses( implode( ' · ', $liens ), array( 'a' => array( 'href' => array() ) ) ) . ' <span class="vsg-help">(encadré « Coordonnées affichées sur le site », en bas de la page)</span></li>';
+	}
+	if ( $cure ) {
+		echo '<li><a href="' . esc_url( (string) get_edit_post_link( $cure ) ) . '">Le mot du curé</a></li>';
+	}
+	if ( get_option( 'page_on_front' ) ) {
+		echo '<li><a href="' . esc_url( (string) get_edit_post_link( (int) get_option( 'page_on_front' ) ) ) . '">Nom et photo du curé, autres prêtres, thème de l\'année</a> <span class="vsg-help">(page « Bienvenue », encadrés en bas)</span></li>';
+	}
+	echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=evenement&page=vsg-import' ) ) . '">Importer le programme de l\'année dans l\'agenda</a></li>';
+	echo '<li><a href="' . esc_url( admin_url( 'media-new.php' ) ) . '">Ajouter une photo ou un document</a></li>';
+	echo '</ul>';
+
+	/* Administrateur seulement. */
+	if ( current_user_can( 'manage_options' ) ) {
+		$admin = array(
+			array( 'Mises à jour du thème', admin_url( 'themes.php?page=vsg-mises-a-jour' ) ),
+			array( 'Mode maintenance', admin_url( 'themes.php?page=vsg-maintenance' ) ),
+			array( 'Comptes (rôle Secrétariat)', admin_url( 'users.php' ) ),
+			array( 'Mails, liens utiles', admin_url( 'options-general.php' ) ),
+			array( 'Dons en ligne', admin_url( 'options-general.php?page=vsg-dons' ) ),
+		);
+		echo '<h3 class="vsg-mt14">Administration</h3><ul class="vsg-links">';
+		foreach ( $admin as $a ) {
+			echo '<li><a href="' . esc_url( $a[1] ) . '">' . esc_html( $a[0] ) . '</a></li>';
+		}
+		echo '</ul>';
+	}
 	if ( $last ) {
 		echo '<p class="vsg-mt14">Dernière feuille déposée : <strong>' . esc_html( get_the_title( $last ) ) . '</strong> (' . esc_html( vsg_post_date( $last ) ) . ').</p>';
 	}
