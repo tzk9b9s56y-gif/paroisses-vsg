@@ -80,8 +80,8 @@ add_action(
 /* Rendez-vous : formulaire simple (titre, date et lieu, texte) plutôt que l'éditeur de blocs. */
 add_filter(
 	'use_block_editor_for_post_type',
-	function ( $use, $type ) {
-		return 'evenement' === $type ? false : $use;
+	function ( $actif, $type ) {
+		return 'evenement' === $type ? false : $actif;
 	},
 	10,
 	2
