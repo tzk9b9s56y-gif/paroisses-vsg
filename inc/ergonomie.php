@@ -291,6 +291,38 @@ function vsg_dashboard_drafts() {
 	echo '</ul>';
 }
 
+/*
+ * Tableau de bord fixe : une seule colonne pleine largeur, panneaux ni déplaçables ni repliables.
+ * Les flèches « Monter / Descendre » de WordPress créaient des colonnes vides (« Glissez les blocs ici »)
+ * et coinçaient les actions dans une colonne étroite ; les réglages déjà enregistrés sont ignorés.
+ */
+add_filter(
+	'get_user_option_screen_layout_dashboard',
+	function () {
+		return 1;
+	}
+);
+add_filter( 'get_user_option_meta-box-order_dashboard', '__return_empty_array' );
+add_filter( 'get_user_option_closedpostboxes_dashboard', '__return_empty_array' );
+add_action(
+	'admin_head-index.php',
+	function () {
+		echo '<style>
+			#dashboard-widgets .postbox-container { width: 100% !important; }
+			#dashboard-widgets .handle-actions, #dashboard-widgets .empty-container, #dashboard-widgets .sortable-placeholder { display: none !important; }
+			#dashboard-widgets .postbox-header .hndle { cursor: default !important; }
+			#dashboard-widgets .meta-box-sortables { min-height: 0 !important; }
+			#dashboard-widgets-wrap { max-width: 1100px; }
+		</style>';
+	}
+);
+add_action(
+	'admin_footer-index.php',
+	function () {
+		echo '<script>jQuery( function ( $ ) { if ( $.fn.sortable ) { $( "#dashboard-widgets .meta-box-sortables" ).sortable( "disable" ); } } );</script>';
+	}
+);
+
 /* Pied de page de l'administration : un rappel utile plutôt que la mention de WordPress. */
 add_filter(
 	'admin_footer_text',
