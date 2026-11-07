@@ -38,6 +38,15 @@ function vsg_field( $post_id, $key, $label, $type = 'text', $help = '' ) {
 	echo '<p class="vsg-mb12"><label class="vsg-label" for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
 	if ( 'textarea' === $type ) {
 		echo '<textarea class="widefat" rows="3" id="' . esc_attr( $id ) . '" name="' . esc_attr( $id ) . '">' . esc_textarea( $val ) . '</textarea>';
+	} elseif ( 'image' === $type ) {
+		/*
+		 * Image : bouton « Choisir une image » (médiathèque) et aperçu (assets/js/admin.js).
+		 * L'adresse reste enregistrée dans le champ, comme avant ; sans JavaScript, on peut toujours la coller.
+		 */
+		echo '<span class="vsg-image" data-vsg-image>';
+		echo '<img class="vsg-image__preview" src="' . esc_url( $val ) . '" alt=""' . ( $val ? '' : ' hidden' ) . '>';
+		echo '<input class="widefat vsg-image__url" type="url" id="' . esc_attr( $id ) . '" name="' . esc_attr( $id ) . '" value="' . esc_attr( $val ) . '" placeholder="Adresse de l\'image">';
+		echo '</span>';
 	} else {
 		echo '<input class="widefat" type="' . esc_attr( $type ) . '" id="' . esc_attr( $id ) . '" name="' . esc_attr( $id ) . '" value="' . esc_attr( $val ) . '">';
 	}
@@ -119,16 +128,17 @@ function vsg_box_cure( $post ) {
 		echo '<p class="vsg-help">Le mot du curé se rédige dans sa propre page : <a href="' . esc_url( (string) get_edit_post_link( $page->ID ) ) . '">modifier la page « Le mot du curé »</a>. Le début s\'affiche sur l\'accueil.</p>';
 	}
 	vsg_field( $post->ID, 'cure_nom', 'Nom du curé', 'text', 'Ex. : Père Jean Dupont, curé' );
-	vsg_field( $post->ID, 'cure_photo', 'Adresse de la photo du curé (copiée depuis la médiathèque)', 'url' );
+	vsg_field( $post->ID, 'cure_photo', 'Photo du curé', 'image', 'Une photo carrée ou en portrait convient le mieux.' );
 	vsg_field( $post->ID, 'cure_tel', 'Téléphone direct du curé (facultatif : vide = rien n\'est affiché)', 'text' );
 	vsg_field( $post->ID, 'cure_email', 'Mail direct du curé', 'email' );
-	vsg_field( $post->ID, 'pretres', 'Autres prêtres : une ligne par prêtre, sous la forme « Nom ; rôle ; adresse de la photo »', 'textarea' );
+	/* Autres prêtres : la zone de texte (« Nom ; rôle ; adresse de la photo » par ligne) devient un petit formulaire avec JavaScript. */
+	vsg_field( $post->ID, 'pretres', 'Autres prêtres (vous accueillent aussi)', 'textarea', 'Une ligne par prêtre : Nom ; rôle ; adresse de la photo.' );
 }
 
 function vsg_box_theme( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
 	vsg_field( $post->ID, 'theme_titre', 'Thème de l\'année', 'text', 'Ex. : Ensemble, vivons la fraternité. Vide = rien n\'est affiché.' );
-	vsg_field( $post->ID, 'theme_image', 'Visuel du thème (adresse de l\'image, copiée depuis la médiathèque)', 'url', 'Facultatif. Une image large (bannière) convient le mieux.' );
+	vsg_field( $post->ID, 'theme_image', 'Visuel du thème', 'image', 'Facultatif. Une image large (bannière) convient le mieux.' );
 	vsg_field( $post->ID, 'theme_lien', 'Lien quand on clique sur le thème', 'url', 'Par exemple l\'actualité de la rentrée pastorale.' );
 }
 

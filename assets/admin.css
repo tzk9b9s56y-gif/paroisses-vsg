@@ -44,3 +44,13 @@
 #vsg_event .inside > .vsg-help { grid-column:1 / -1 !important; }
 .vsg-links { margin:6px 0 0 !important; }
 .vsg-links li { margin:6px 0 !important; }
+.vsg-image { display:block !important; }
+.vsg-image__preview { display:block !important; max-width:240px !important; max-height:140px !important; margin:4px 0 8px !important; border:1px solid #c3c4c7 !important; border-radius:4px !important; background:#f0f0f1 !important; object-fit:contain !important; }
+.vsg-image__preview[hidden], .vsg-pretre__photo[hidden] { display:none !important; }
+.vsg-image__actions { display:block !important; margin-top:6px !important; }
+.vsg-pretres { display:flex !important; flex-direction:column !important; gap:10px !important; margin:6px 0 10px !important; }
+.vsg-pretre { display:grid !important; grid-template-columns:56px 1fr 1fr auto !important; gap:10px !important; align-items:end !important; padding:10px !important; border:1px solid #dcdcde !important; border-radius:6px !important; background:#fff !important; }
+.vsg-pretre label { display:flex !important; flex-direction:column !important; }
+.vsg-pretre input { width:100% !important; }
+.vsg-pretre__photo { width:56px !important; height:56px !important; border-radius:50% !important; object-fit:cover !important; background:#f0f0f1 !important; }
+@media (max-width: 782px) { .vsg-pretre { grid-template-columns:56px 1fr !important; } }

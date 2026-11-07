@@ -71,7 +71,6 @@ function vsg_dashboard_actions() {
 		echo '<li><a href="' . esc_url( (string) get_edit_post_link( (int) get_option( 'page_on_front' ) ) ) . '">Nom et photo du curé, autres prêtres, thème de l\'année</a> <span class="vsg-help">(page « Bienvenue », encadrés en bas)</span></li>';
 	}
 	echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=evenement&page=vsg-import' ) ) . '">Importer le programme de l\'année dans l\'agenda</a></li>';
-	echo '<li><a href="' . esc_url( admin_url( 'media-new.php' ) ) . '">Ajouter une photo ou un document</a></li>';
 	echo '</ul>';
 
 	/* Administrateur seulement. */
@@ -327,5 +326,10 @@ add_action(
 	function () {
 		wp_enqueue_style( 'vsg-admin', VSG_URI . '/assets/admin.css', array(), VSG_VERSION );
 		wp_enqueue_script( 'vsg-admin', VSG_URI . '/assets/js/admin.js', array(), VSG_VERSION, array( 'in_footer' => true ) );
+		/* Médiathèque pour les boutons « Choisir une image » (photo du curé, prêtres, thème de l'année). */
+		$screen = get_current_screen();
+		if ( $screen && 'post' === $screen->base && 'page' === $screen->post_type ) {
+			wp_enqueue_media();
+		}
 	}
 );
