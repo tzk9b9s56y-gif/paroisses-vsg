@@ -59,7 +59,8 @@ function vsg_field( $post_id, $key, $label, $type = 'text', $help = '' ) {
 function vsg_box_event( $post ) {
 	wp_nonce_field( 'vsg_save', 'vsg_nonce' );
 	vsg_field( $post->ID, 'date', 'Date', 'date' );
-	vsg_field( $post->ID, 'heure', 'Heure', 'time', 'Laisser vide si toute la journée.' );
+	vsg_field( $post->ID, 'heure', 'Heure de début', 'time', 'Laisser vide si toute la journée.' );
+	vsg_field( $post->ID, 'heure_fin', 'Heure de fin (facultatif)', 'time', 'Si elle est indiquée, l\'accueil affiche « En ce moment » pendant le rendez-vous.' );
 	vsg_field( $post->ID, 'lieu', 'Lieu précis (facultatif)', 'text', 'Ex. : grande salle, petite salle, cuisine…' );
 	$cur = vsg_meta( $post->ID, 'type' );
 	echo '<p class="vsg-mb12"><label class="vsg-label" for="vsg_type">Type de rendez-vous</label><select class="widefat" id="vsg_type" name="vsg_type"><option value="">—</option>';
@@ -175,6 +176,7 @@ add_action(
 		$fields = array(
 			'date'               => 'date',
 			'heure'              => 'time',
+			'heure_fin'          => 'time',
 			'lieu'               => 'text',
 			'eglise'             => 'text',
 			'adresse'            => 'text',

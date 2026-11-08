@@ -102,19 +102,29 @@ $cure_mot    = (bool) $cure_pieces;
 	</div>
 </section>
 
+<?php $events = vsg_home_events(); ?>
+<?php if ( $events['today'] ) : ?>
+<section class="band band--today" id="aujourdhui">
+	<div class="wrap">
+		<?php vsg_section_head( 'Aujourd\'hui dans nos paroisses' ); ?>
+		<div class="grid grid--3">
+			<?php
+			foreach ( $events['today'] as $ev ) {
+				echo vsg_event( $ev, 'card', true, vsg_event_status( $ev ) );
+			}
+			?>
+		</div>
+	</div>
+</section>
+<?php endif; ?>
+
 <section class="band band--soft">
 	<div class="wrap">
 		<?php vsg_section_head( 'Prochains rendez-vous', vsg_page_url( 'agenda' ), 'Voir l\'agenda complet' ); ?>
 		<?php
-		$q = vsg_events_query(
-			array(
-				'limit' => 30,
-				'kind'  => 'parish',
-			)
-		);
-		if ( $q->have_posts() ) {
+		if ( $events['next'] ) {
 			echo '<div class="grid grid--3">';
-			foreach ( vsg_events_unique( $q->posts ) as $ev ) {
+			foreach ( $events['next'] as $ev ) {
 				echo vsg_event( $ev, 'card' );
 			}
 			echo '</div>';
@@ -124,6 +134,21 @@ $cure_mot    = (bool) $cure_pieces;
 		?>
 	</div>
 </section>
+
+<?php if ( $events['recent'] ) : ?>
+<section class="band" id="recemment">
+	<div class="wrap">
+		<?php vsg_section_head( 'Ces derniers jours dans nos paroisses' ); ?>
+		<div class="grid grid--3">
+			<?php
+			foreach ( $events['recent'] as $ev ) {
+				echo vsg_event( $ev, 'card', true, vsg_event_has_photos( $ev ) ? 'photos' : '' );
+			}
+			?>
+		</div>
+	</div>
+</section>
+<?php endif; ?>
 
 <section class="band" id="actualites">
 	<div class="wrap">

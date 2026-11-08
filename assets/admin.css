@@ -26,6 +26,8 @@
 .vsg-keyrow { display:flex !important; gap:6px !important; align-items:center !important; max-width:640px !important; }
 .vsg-tile { display:block !important; padding:16px !important; border:1px solid #c3c4c7 !important; border-radius:8px !important; text-decoration:none !important; background:#fff !important; }
 .vsg-tile__title { display:block !important; font-size:15px !important; color:#1F3A5F !important; margin-bottom:4px !important; }
+.vsg-tile__actions { display:flex !important; flex-wrap:wrap !important; gap:6px !important; margin-top:12px !important; }
+#wpadminbar #wp-admin-bar-vsg-back > .ab-item { font-weight:600 !important; }
 .vsg-mt4 { margin:4px 0 0 !important; }
 .vsg-mt12 { margin:12px 0 0 !important; }
 .vsg-mb10 { margin:0 0 10px !important; }

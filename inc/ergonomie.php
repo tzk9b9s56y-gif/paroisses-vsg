@@ -70,6 +70,43 @@ add_action(
 	80
 );
 
+/*
+ * « ← Retour » dans la barre du haut, sur tous les écrans de l'administration sauf le tableau de bord :
+ * revient à l'étape précédente (comme le bouton du navigateur), ou au tableau de bord s'il n'y en a pas.
+ * « Tableau de bord » juste à côté pour repartir de l'accueil de l'administration.
+ */
+add_action(
+	'admin_bar_menu',
+	function ( $bar ) {
+		if ( ! is_admin() ) {
+			return;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && 'dashboard' === $screen->id ) {
+			return;
+		}
+		$bar->add_node(
+			array(
+				'id'    => 'vsg-back',
+				'title' => '← Retour',
+				'href'  => admin_url(),
+				'meta'  => array(
+					'title'   => 'Revenir à l\'écran précédent',
+					'onclick' => 'if(window.history.length>1){window.history.back();return false;}',
+				),
+			)
+		);
+		$bar->add_node(
+			array(
+				'id'    => 'vsg-dashboard',
+				'title' => 'Tableau de bord',
+				'href'  => admin_url(),
+			)
+		);
+	},
+	5
+);
+
 /* ---------- Formulaires de saisie ---------- */
 
 /* Rendez-vous : formulaire simple (titre, date et lieu, texte) plutôt que l'éditeur de blocs. */
@@ -132,7 +169,7 @@ function vsg_help_steps() {
 			'Ajouter un rendez-vous',
 			array(
 				'Écrivez le <strong>nom</strong> du rendez-vous.',
-				'Remplissez <strong>Date et lieu</strong>, juste en dessous (heure facultative ; type si c\'est un groupe ou une communauté).',
+				'Remplissez <strong>Date et lieu</strong>, juste en dessous (heures de début et de fin facultatives : avec une heure de fin, l\'accueil affiche « En ce moment » pendant le rendez-vous ; type si c\'est un groupe ou une communauté).',
 				'Écrivez les détails dans le grand champ de texte (facultatif).',
 				'À droite : cochez la <strong>paroisse ou la chapelle</strong> dans « Paroisses et lieux », et une image dans « Image mise en avant » si vous en avez une.',
 				'Cliquez sur <strong>Publier</strong>. Le rendez-vous apparaît dans l\'agenda à sa date. Pour un rendez-vous interne, mettez la visibilité sur « Privé ».',

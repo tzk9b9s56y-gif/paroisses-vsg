@@ -1,7 +1,7 @@
 /*
 Theme Name: Ensemble paroissial Notre-Dame de Lourdes – Sainte-Geneviève
 Description: Thème du site commun des paroisses Notre-Dame de Lourdes et Sainte-Geneviève (chapelles Saint-Louis et Saint-Joseph). Agenda, feuilles paroissiales et formulaire de contact intégrés, sans extension.
-Version: 0.9.38
+Version: 0.9.39
 Requires at least: 6.4
 Requires PHP: 8.1
 Author: Équipe du site paroissial
@@ -387,6 +387,7 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 .notice { padding: 14px 18px; border-radius: 8px; font-weight: 600; }
 .notice--ok { background: #E7F4EA; color: #1D5B2B; }
 .notice--err { background: #FBEAEA; color: #8A1C1C; }
+.notice--info { background: #EEF2F7; color: #1F3A5F; }
 
 /* ---------- Pied de page ---------- */
 .sitefooter { background: var(--navy-dark); color: #DCE3EC; font-size: 15px; margin-top: 0; }
@@ -435,6 +436,19 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 .list--tight .chip--private { grid-area: auto; }
 @media (max-width: 640px) { .list--tight .event__body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "meta" "chip"; } .list--tight .chip { justify-self: start; margin-top: 4px; } }
 .chip--private { color: #fff; background: var(--muted); border-color: var(--muted); }
+/* Accueil : « Aujourd'hui » et « Ces derniers jours » */
+.band--today { background: #FBF6EC; }
+.chip--now { color: #fff; background: #1d7a46; border-color: #1d7a46; }
+.chip--now::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #fff; vertical-align: 1px; animation: vsg-pulse 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .chip--now::before { animation: none; } }
+@keyframes vsg-pulse { 50% { opacity: .35; } }
+.chip--done { color: var(--muted); background: transparent; border-color: currentColor; }
+.chip--photos { color: #fff; background: var(--accent); border-color: var(--accent); }
+/* Galerie de l'éditeur classique (rendez-vous) : même grille que la galerie de blocs. */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.gallery .gallery-item { margin: 0; width: auto !important; }
+.gallery img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 0 !important; }
+.gallery br { display: none; }
 .curecontact { margin-top: 16px; }
 .menu--types { margin-top: 10px; }
 .menu--types nav a .dot { margin-right: 8px; }

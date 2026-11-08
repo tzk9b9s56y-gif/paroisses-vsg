@@ -53,6 +53,7 @@ add_action(
 		add_theme_support( 'responsive-embeds' );
 		add_theme_support( 'align-wide' );
 		add_theme_support( 'html5', array( 'search-form', 'gallery', 'caption', 'style', 'script' ) );
+		add_filter( 'use_default_gallery_style', '__return_false' ); // grille du thème, sans le style intégré de WordPress.
 		add_theme_support(
 			'custom-logo',
 			array(

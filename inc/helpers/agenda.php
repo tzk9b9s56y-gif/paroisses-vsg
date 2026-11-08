@@ -78,25 +78,27 @@ function vsg_event_type( $post ) {
 }
 
 function vsg_events_query( $args = array() ) {
-	$args   = wp_parse_args(
+	$args = wp_parse_args(
 		$args,
 		array(
 			'terms'         => array(),
 			'limit'         => 3,
 			'from'          => vsg_today(),
+			'to'            => '', // dernière date incluse (vide = sans limite)
+			'order'         => 'ASC',
 			'children'      => true,
 			'exclude_terms' => array(),
 			'kind'          => '', // '' = tout, 'parish' = activités paroissiales, 'groups' = groupes et communautés
 			'type'          => '', // un type de rendez-vous précis
 		)
 	);
-	$q      = array(
+	$q    = array(
 		'post_type'      => 'evenement',
 		'post_status'    => current_user_can( 'read_private_posts' ) ? array( 'publish', 'private' ) : 'publish',
 		'posts_per_page' => $args['limit'],
 		'meta_key'       => '_vsg_date',
 		'orderby'        => array(
-			'meta_value' => 'ASC',
+			'meta_value' => 'DESC' === $args['order'] ? 'DESC' : 'ASC',
 			'title'      => 'ASC',
 		),
 		'meta_query'     => array(
@@ -108,6 +110,14 @@ function vsg_events_query( $args = array() ) {
 			),
 		),
 	);
+	if ( $args['to'] ) {
+		$q['meta_query'][] = array(
+			'key'     => '_vsg_date',
+			'value'   => $args['to'],
+			'compare' => '<=',
+			'type'    => 'DATE',
+		);
+	}
 	$groups = array_keys( vsg_group_types() );
 	if ( 'parish' === $args['kind'] ) {
 		$q['meta_query'][] = array(
@@ -346,4 +356,92 @@ function vsg_feuille_pdf( $post ) {
 		return $m[1];
 	}
 	return '';
+}
+
+/** Heures d'un rendez-vous : « 8 h – 17 h », « 15 h » ou vide (toute la journée). */
+function vsg_event_hours( $post ) {
+	$debut = vsg_meta( $post->ID, 'heure' );
+	$fin   = vsg_meta( $post->ID, 'heure_fin' );
+	if ( ! vsg_time_label( $debut ) ) {
+		return '';
+	}
+	return vsg_time_label( $debut ) . ( vsg_time_label( $fin ) && $fin > $debut ? ' – ' . vsg_time_label( $fin ) : '' );
+}
+
+/**
+ * Où en est un rendez-vous du jour : « now » pendant le créneau (heure de fin indiquée),
+ * « done » après, « soon » avant ; vide pour un autre jour ou sans heure de fin.
+ */
+function vsg_event_status( $post ) {
+	$debut = vsg_meta( $post->ID, 'heure' );
+	$fin   = vsg_meta( $post->ID, 'heure_fin' );
+	if ( vsg_meta( $post->ID, 'date' ) !== vsg_today() || ! vsg_time_label( $debut ) || ! vsg_time_label( $fin ) || $fin <= $debut ) {
+		return '';
+	}
+	$now = current_time( 'H:i' );
+	if ( $now < $debut ) {
+		return 'soon';
+	}
+	return $now < $fin ? 'now' : 'done';
+}
+
+/** Le rendez-vous a-t-il un retour en images (galerie ou photo dans son texte) ? */
+function vsg_event_has_photos( $post ) {
+	$c = (string) $post->post_content;
+	return false !== strpos( $c, '[gallery' ) || false !== stripos( $c, '<img' ) || has_block( 'gallery', $post ) || has_block( 'image', $post );
+}
+
+/** Rendez-vous du jour, à venir (dès demain) et passés récemment, pour l'accueil. */
+function vsg_home_events() {
+	$today  = vsg_today();
+	$base   = array(
+		'limit' => 30,
+		'kind'  => 'parish',
+	);
+	$ago    = gmdate( 'Y-m-d', strtotime( $today . ' -' . VSG_RECENT_DAYS . ' days' ) );
+	$yday   = gmdate( 'Y-m-d', strtotime( $today . ' -1 day' ) );
+	$tmrw   = gmdate( 'Y-m-d', strtotime( $today . ' +1 day' ) );
+	$todayq = vsg_events_query(
+		array_merge(
+			$base,
+			array(
+				'from' => $today,
+				'to'   => $today,
+			)
+		)
+	);
+	$nextq  = vsg_events_query( array_merge( $base, array( 'from' => $tmrw ) ) );
+	$pastq  = vsg_events_query(
+		array_merge(
+			$base,
+			array(
+				'from'  => $ago,
+				'to'    => $yday,
+				'order' => 'DESC',
+			)
+		)
+	);
+	return array(
+		'today'  => vsg_events_unique( $todayq->posts, 6 ),
+		'next'   => vsg_events_unique( $nextq->posts ),
+		'recent' => vsg_events_recent( $pastq->posts ),
+	);
+}
+
+/** Passés récemment : du plus récent au plus ancien, un seul par titre, 3 au plus. */
+function vsg_events_recent( $posts ) {
+	$out  = array();
+	$seen = array();
+	foreach ( $posts as $p ) {
+		$k = get_the_title( $p );
+		if ( isset( $seen[ $k ] ) ) {
+			continue;
+		}
+		$seen[ $k ] = true;
+		$out[]      = $p;
+		if ( count( $out ) >= 3 ) {
+			break;
+		}
+	}
+	return $out;
 }

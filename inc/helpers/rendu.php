@@ -119,9 +119,14 @@ function vsg_date_badge( $ymd ) {
 }
 
 /** Rendez-vous : « card » (accueil), « row » (listes). */
-function vsg_event( $post, $variant = 'card', $show_place = true ) {
+/**
+ * Carte d'un rendez-vous.
+ *
+ * @param string $flag Étiquette d'état : « now » (En ce moment), « done » (Terminé), « photos » (Retour en images).
+ */
+function vsg_event( $post, $variant = 'card', $show_place = true, $flag = '' ) {
 	$date  = vsg_meta( $post->ID, 'date' );
-	$heure = vsg_time_label( vsg_meta( $post->ID, 'heure' ) );
+	$heure = vsg_event_hours( $post );
 	$lieu  = vsg_meta( $post->ID, 'lieu' );
 	$group = vsg_event_group( $post );
 	$type  = vsg_event_type( $post );
@@ -135,9 +140,9 @@ function vsg_event( $post, $variant = 'card', $show_place = true ) {
 		$style = vsg_accent_attr( $post );
 		$meta  = array( $heure, $lieu, ( $type && 'row' === $variant ) ? $type['label'] : '' );
 	}
-	$meta = array_filter( $meta );
-	$when = trim( vsg_date_long( $date ) . ( $heure ? ', ' . $heure : '' ) );
-	$img  = ( 'card' === $variant && has_post_thumbnail( $post ) ) ? get_the_post_thumbnail(
+	$meta  = array_filter( $meta );
+	$when  = trim( vsg_date_long( $date ) . ( $heure ? ', ' . $heure : '' ) );
+	$img   = ( 'card' === $variant && has_post_thumbnail( $post ) ) ? get_the_post_thumbnail(
 		$post,
 		'medium_large',
 		array(
@@ -146,6 +151,11 @@ function vsg_event( $post, $variant = 'card', $show_place = true ) {
 			'loading' => 'eager',
 		)
 	) : '';
+	$flags = array(
+		'now'    => 'En ce moment',
+		'done'   => 'Terminé',
+		'photos' => 'Retour en images',
+	);
 	ob_start();
 	?>
 	<a class="event event--<?php echo esc_attr( $variant ); ?><?php echo $img ? ' event--img' : ''; ?>" href="<?php echo esc_url( get_permalink( $post ) ); ?>"<?php echo $style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribut construit avec esc_attr(). ?>>
@@ -154,6 +164,7 @@ function vsg_event( $post, $variant = 'card', $show_place = true ) {
 		<span class="event__body">
 			<?php if ( $chip ) : ?><span class="chip<?php echo $group ? ' chip--group' : ''; ?>"><?php echo esc_html( $chip ); ?></span><?php endif; ?>
 			<?php if ( 'private' === $post->post_status ) : ?><span class="chip chip--private">Interne</span><?php endif; ?>
+			<?php if ( isset( $flags[ $flag ] ) ) : ?><span class="chip chip--<?php echo esc_attr( $flag ); ?>"><?php echo esc_html( $flags[ $flag ] ); ?></span><?php endif; ?>
 			<span class="event__title"><?php if ( $type && ! $group ) : ?><span class="dot" style="background:<?php echo esc_attr( $type['color'] ); ?>" title="<?php echo esc_attr( $type['label'] ); ?>"></span><?php endif; ?><?php echo esc_html( get_the_title( $post ) ); ?></span>
 			<span class="sr-only"><?php echo esc_html( $when ); ?></span>
 			<?php if ( $meta ) : ?><span class="event__meta"><?php echo esc_html( implode( ' · ', $meta ) ); ?></span><?php endif; ?>

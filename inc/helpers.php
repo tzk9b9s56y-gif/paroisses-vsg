@@ -12,6 +12,7 @@ const VSG_TPL_COMMUNAUTE  = 'templates/communaute.php';
 const VSG_TPL_COMMUNAUTES = 'templates/communautes.php';
 const VSG_TPL_HORAIRES    = 'templates/horaires.php';
 const VSG_TPL_MOT_CURE    = 'templates/mot-du-cure.php';
+const VSG_RECENT_DAYS     = 14; // « Ces derniers jours » sur l'accueil : rendez-vous des N derniers jours.
 
 require __DIR__ . '/helpers/dates.php';
 require __DIR__ . '/helpers/lieux.php';

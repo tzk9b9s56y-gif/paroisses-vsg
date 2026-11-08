@@ -33,18 +33,53 @@ function vsg_dashboard_actions() {
 	);
 	$last     = $feuilles->have_posts() ? $feuilles->posts[0] : null;
 	$actions  = array(
-		array( 'Publier une actualité', admin_url( 'post-new.php' ), 'Annonce, compte rendu, photos.' ),
-		array( 'Ajouter un rendez-vous', admin_url( 'post-new.php?post_type=evenement' ), 'Il apparaîtra dans l\'agenda à la bonne date.' ),
-		array( 'Déposer la feuille paroissiale', admin_url( 'post-new.php?post_type=feuille' ), 'Un PDF par paroisse et par semaine.' ),
-		array( 'Modifier une page', admin_url( 'edit.php?post_type=page' ), 'Sacrements, catéchèse, coordonnées…' ),
+		array( 'Actualités', 'Annonce, compte rendu, photos.', 'Publier une actualité', admin_url( 'post-new.php' ), 'Modifier une actualité', admin_url( 'edit.php' ) ),
+		array( 'Rendez-vous', 'Il apparaît dans l\'agenda à la bonne date.', 'Ajouter un rendez-vous', admin_url( 'post-new.php?post_type=evenement' ), 'Modifier un rendez-vous', admin_url( 'edit.php?post_type=evenement' ) ),
+		array( 'Feuille paroissiale', 'Un PDF par paroisse et par semaine.', 'Déposer la feuille', admin_url( 'post-new.php?post_type=feuille' ), 'Modifier une feuille', admin_url( 'edit.php?post_type=feuille' ) ),
+		array( 'Pages du site', 'Sacrements, catéchèse, coordonnées…', 'Modifier une page', admin_url( 'edit.php?post_type=page' ), '', '' ),
 	);
 	echo '<div class="vsg-tiles">';
 	foreach ( $actions as $a ) {
-		echo '<a class="vsg-tile" href="' . esc_url( $a[1] ) . '">';
+		echo '<div class="vsg-tile">';
 		echo '<strong class="vsg-tile__title">' . esc_html( $a[0] ) . '</strong>';
-		echo '<span class="vsg-help">' . esc_html( $a[2] ) . '</span></a>';
+		echo '<span class="vsg-help">' . esc_html( $a[1] ) . '</span>';
+		echo '<span class="vsg-tile__actions"><a class="button button-primary" href="' . esc_url( $a[3] ) . '">' . esc_html( $a[2] ) . '</a>';
+		if ( $a[4] ) {
+			echo '<a class="button" href="' . esc_url( $a[5] ) . '">' . esc_html( $a[4] ) . '</a>';
+		}
+		echo '</span></div>';
 	}
 	echo '</div>';
+
+	/* Rendez-vous passés : on y ajoute photos et compte rendu ; l'accueil les montre dans « Ces derniers jours ». */
+	$passes = get_posts(
+		array(
+			'post_type'      => 'evenement',
+			'post_status'    => array( 'publish', 'private' ),
+			'posts_per_page' => 5,
+			'meta_key'       => '_vsg_date',
+			'orderby'        => 'meta_value',
+			'order'          => 'DESC',
+			'meta_query'     => array(
+				array(
+					'key'     => '_vsg_date',
+					'value'   => array( gmdate( 'Y-m-d', strtotime( vsg_today() . ' -' . VSG_RECENT_DAYS . ' days' ) ), gmdate( 'Y-m-d', strtotime( vsg_today() . ' -1 day' ) ) ),
+					'compare' => 'BETWEEN',
+					'type'    => 'DATE',
+				),
+			),
+		)
+	);
+	echo '<h3 class="vsg-mt14">Ajouter des photos à un rendez-vous passé</h3>';
+	if ( $passes ) {
+		echo '<p class="vsg-help vsg-m0">Ouvrez le rendez-vous, ajoutez quelques lignes et une galerie (« Ajouter un média » › « Créer une galerie »), puis « Mettre à jour ». L\'accueil le montre dans « Ces derniers jours dans nos paroisses » pendant ' . (int) VSG_RECENT_DAYS . ' jours.</p><ul class="vsg-links">';
+		foreach ( $passes as $ev ) {
+			echo '<li><a href="' . esc_url( (string) get_edit_post_link( $ev ) ) . '">' . esc_html( get_the_title( $ev ) ) . '</a> <span class="vsg-help">(' . esc_html( vsg_date_long( vsg_meta( $ev->ID, 'date' ) ) ) . ( vsg_event_has_photos( $ev ) ? ', photos déjà ajoutées' : '' ) . ')</span></li>';
+		}
+		echo '</ul>';
+	} else {
+		echo '<p class="vsg-help vsg-m0">Aucun rendez-vous ces ' . (int) VSG_RECENT_DAYS . ' derniers jours.</p>';
+	}
 
 	/* Moins fréquent (guide de la secrétaire, partie 3) : liens directs plutôt qu'une recherche dans les menus. */
 	$lieux = array();

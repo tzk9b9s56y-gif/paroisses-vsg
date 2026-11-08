@@ -84,7 +84,7 @@ function vsg_mentions_content() {
 		. $h( 'Directeur de la publication' )
 		. $p( 'Le père Dramane Mathieu Marie Coulibaly, curé des paroisses Notre-Dame de Lourdes et Sainte-Geneviève.' )
 		. $h( 'Hébergement' )
-		. $p( 'OVH SAS, société par actions simplifiée au capital de 50 000 000 €, RCS Lille Métropole 424 761 419, 2 rue Kellermann, 59100 Roubaix, France.' )
+		. $p( 'OVH SAS, société par actions simplifiée au capital de 50 000 000 €, RCS Lille Métropole 424 761 419, 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 1007.' )
 		. $h( 'Données personnelles' )
 		. $p( 'Responsable du traitement : l\'Association diocésaine de Créteil, pour les paroisses Notre-Dame de Lourdes et Sainte-Geneviève.' )
 		. $p( 'Le site ne crée pas de compte pour les visiteurs et ne garde pas ce que vous envoyez par ses formulaires : chaque message part par mail vers la boîte concernée, puis le site l\'oublie. Les messages reçus sont conservés dans ces boîtes le temps de traiter la demande, puis supprimés au plus tard trois mois après.' )

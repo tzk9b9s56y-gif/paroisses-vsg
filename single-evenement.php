@@ -12,7 +12,8 @@ if ( $parish ) {
 	vsg_parish_band( $parish, get_post() );
 }
 $date  = vsg_meta( get_the_ID(), 'date' );
-$heure = vsg_time_label( vsg_meta( get_the_ID(), 'heure' ) );
+$heure = vsg_event_hours( get_post() );
+$passe = $date && $date < vsg_today();
 $lieu  = vsg_meta( get_the_ID(), 'lieu' );
 $parts = vsg_date_parts( $date );
 ?>
@@ -29,13 +30,16 @@ $parts = vsg_date_parts( $date );
 		<div class="eventfacts">
 			<?php echo vsg_date_badge( $date ); ?>
 			<div>
-				<p class="eventfacts__when"><?php echo esc_html( ucfirst( vsg_date_long( $date ) ) . ( $parts ? ' ' . $parts['year'] : '' ) . ( $heure ? ' à ' . $heure : '' ) ); ?></p>
+				<p class="eventfacts__when"><?php echo esc_html( ucfirst( vsg_date_long( $date ) ) . ( $parts ? ' ' . $parts['year'] : '' ) . ( $heure ? ( false !== strpos( $heure, '–' ) ? ', ' : ' à ' ) . $heure : '' ) ); ?></p>
 				<p class="muted"><?php echo esc_html( implode( ' · ', $group ? vsg_event_where( get_post() ) : array_filter( array( vsg_place_label( get_post() ), $lieu ) ) ) ); ?></p>
 				<?php if ( $group ) : ?>
 					<p class="muted">Proposé par : <?php echo $group['url'] ? '<a href="' . esc_url( $group['url'] ) . '">' . esc_html( $group['label'] ) . '</a>' : esc_html( $group['label'] ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
+		<?php if ( $passe ) : ?>
+			<p class="notice notice--info">Ce rendez-vous a eu lieu<?php echo vsg_event_has_photos( get_post() ) ? ' : retrouvez-le en images ci-dessous.' : '.'; ?></p>
+		<?php endif; ?>
 		<?php if ( has_post_thumbnail() ) : ?>
 			<div class="figure figure--poster"><?php the_post_thumbnail( 'large', array( 'alt' => vsg_poster_alt( get_post() ) ) ); ?></div>
 		<?php endif; ?>
