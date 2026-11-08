@@ -1,7 +1,7 @@
 /*
 Theme Name: Ensemble paroissial Notre-Dame de Lourdes – Sainte-Geneviève
 Description: Thème du site commun des paroisses Notre-Dame de Lourdes et Sainte-Geneviève (chapelles Saint-Louis et Saint-Joseph). Agenda, feuilles paroissiales et formulaire de contact intégrés, sans extension.
-Version: 0.9.39
+Version: 0.9.40
 Requires at least: 6.4
 Requires PHP: 8.1
 Author: Équipe du site paroissial
@@ -449,6 +449,24 @@ h1.featurefile__title { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2; }
 .gallery .gallery-item { margin: 0; width: auto !important; }
 .gallery img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 0 !important; }
 .gallery br { display: none; }
+/* Visionneuse des galeries */
+.lightbox-trigger { cursor: zoom-in; }
+.lightbox-open { overflow: hidden; }
+.lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(10, 16, 28, .92); padding: 56px 64px; }
+.lightbox[hidden] { display: none; }
+.lightbox__fig { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 100%; max-height: 100%; }
+.lightbox__fig img { max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain; border-radius: 6px; box-shadow: 0 8px 32px rgba(0, 0, 0, .5); }
+.lightbox__fig figcaption { color: #E8EDF4; font-size: 15px; text-align: center; }
+.lightbox__nav, .lightbox__close { position: absolute; border: 0; background: rgba(255, 255, 255, .14); color: #fff; cursor: pointer; border-radius: 999px; line-height: 1; }
+.lightbox__nav:hover, .lightbox__close:hover { background: rgba(255, 255, 255, .28); }
+.lightbox__nav:focus-visible, .lightbox__close:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.lightbox__nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 34px; }
+.lightbox__nav[hidden] { display: none; }
+.lightbox__prev { left: 10px; }
+.lightbox__next { right: 10px; }
+.lightbox__close { top: 12px; right: 12px; width: 44px; height: 44px; font-size: 30px; }
+.lightbox__count { position: absolute; bottom: 14px; left: 0; right: 0; margin: 0; text-align: center; color: #C9D3E0; font-size: 14px; }
+@media (max-width: 640px) { .lightbox { padding: 56px 8px; } .lightbox__nav { top: auto; bottom: 8px; transform: none; } .lightbox__prev { left: 16px; } .lightbox__next { right: 16px; } }
 .curecontact { margin-top: 16px; }
 .menu--types { margin-top: 10px; }
 .menu--types nav a .dot { margin-right: 8px; }

@@ -153,7 +153,9 @@ add_filter(
 		);
 		/* Après accord : WordPress ne propose jamais la version lui-même ; seule la page Mises à jour du thème l'installe. */
 		$allowed = 'auto' === vsg_au_mode() || ! empty( $GLOBALS['vsg_au_installing'] );
-		if ( $allowed && $remote && version_compare( $remote, $local, '>' ) ) {
+		/* Retour à une version antérieure choisie dans la page Mises à jour du thème : seule exception au « plus récent seulement ». */
+		$older = ! empty( $GLOBALS['vsg_au_older'] ) && $remote && $remote !== $local;
+		if ( $allowed && $remote && ( $older || version_compare( $remote, $local, '>' ) ) ) {
 			$transient->response[ $slug ] = $item;
 		} else {
 			unset( $transient->response[ $slug ] );

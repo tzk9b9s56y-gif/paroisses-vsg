@@ -9,11 +9,12 @@ defined( 'ABSPATH' ) || exit;
 /** Origines possibles d'une ligne, avec leur libellé. */
 function vsg_journal_sources() {
 	return array(
-		'github'  => 'Signal GitHub',
-		'heure'   => 'Vérification horaire',
-		'manuel'  => 'Manuel',
-		'accord'  => 'Votre accord',
-		'serveur' => 'Serveur',
+		'github'   => 'Signal GitHub',
+		'heure'    => 'Vérification horaire',
+		'manuel'   => 'Manuel',
+		'accord'   => 'Votre accord',
+		'serveur'  => 'Serveur',
+		'ancienne' => 'Version antérieure',
 	);
 }
 

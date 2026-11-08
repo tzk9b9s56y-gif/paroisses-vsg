@@ -124,14 +124,21 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 		vsg_journal( $source, $msg );
 		return $msg;
 	}
-	if ( ! version_compare( $rel['version'], $local, '>' ) ) {
+	$older = 'ancienne' === $source;
+	if ( $older && ( $rel['version'] === $local || ! vsg_au_old_allowed( $rel['version'] ) ) ) {
+		delete_transient( 'vsg_au_lock' );
+		$msg = $rel['version'] === $local ? 'La ' . $local . ' est déjà installée.' : 'La ' . $rel['version'] . ' ne peut pas être réinstallée depuis cette page (versions ' . VSG_AU_OLDEST . ' et suivantes seulement).';
+		vsg_journal( 'manuel', $msg );
+		return $msg;
+	}
+	if ( ! $older && ! version_compare( $rel['version'], $local, '>' ) ) {
 		delete_transient( 'vsg_au_lock' );
 		if ( 'heure' !== $source ) {
 			vsg_journal( $source, 'Déjà à jour (' . $local . ').' );
 		}
 		return 'Le thème est déjà à jour (' . $local . ').';
 	}
-	if ( in_array( $rel['sha'], vsg_au_refused(), true ) ) {
+	if ( ! $older && in_array( $rel['sha'], vsg_au_refused(), true ) ) {
 		delete_transient( 'vsg_au_lock' );
 		$msg = 'La version ' . $rel['version'] . ' (commit ' . substr( $rel['sha'], 0, 7 ) . ') a été refusée : elle n\'est pas installée.';
 		if ( 'heure' !== $source ) {
@@ -139,7 +146,7 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 		}
 		return $msg;
 	}
-	if ( 'accord' === vsg_au_mode() && 'accord' !== $source ) {
+	if ( ! $older && 'accord' === vsg_au_mode() && 'accord' !== $source ) {
 		delete_transient( 'vsg_au_lock' );
 		$pending = vsg_au_pending();
 		if ( $pending && $pending['sha'] === $rel['sha'] ) {
@@ -150,6 +157,7 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 
 	/* La version vérifiée devient celle que WordPress proposera, avec l'archive de ce commit. */
 	$GLOBALS['vsg_au_installing'] = true;
+	$GLOBALS['vsg_au_older']      = $older;
 	set_site_transient( 'vsg_remote_release', $rel, HOUR_IN_SECONDS );
 	delete_site_transient( 'update_themes' );
 	wp_update_themes();
@@ -163,10 +171,15 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 	$result   = $upgrader->upgrade( $slug );
 
 	$GLOBALS['vsg_au_installing'] = false;
+	$GLOBALS['vsg_au_older']      = false;
+	/* Le prochain contrôle relit GitHub : la version la plus récente sera de nouveau proposée. */
+	delete_site_transient( 'vsg_remote_release' );
 	wp_clean_themes_cache();
 	$now = wp_get_theme( $slug )->get( 'Version' );
-	if ( true === $result && version_compare( $now, $local, '>' ) ) {
-		$msg = 'Mise à jour installée : ' . $local . ' → ' . $now . '.';
+	if ( true === $result && ( $older ? $now === $rel['version'] : version_compare( $now, $local, '>' ) ) ) {
+		$msg = $older
+			? 'Retour à une version antérieure : ' . $local . ' → ' . $now . ' (commit ' . substr( $rel['sha'], 0, 7 ) . '), par ' . wp_get_current_user()->display_name . '. La version la plus récente sera de nouveau proposée.'
+			: 'Mise à jour installée : ' . $local . ' → ' . $now . '.';
 		/* Le site doit répondre avec la nouvelle version ; sinon on remet l'ancienne. */
 		$ok = vsg_site_responds();
 		if ( false === $ok && $backup ) {
@@ -197,12 +210,64 @@ function vsg_au_run( $source = 'heure', $sha = '' ) {
 		delete_option( 'vsg_update_backup' );
 	}
 	$pending = vsg_au_pending();
-	if ( $pending && ! version_compare( $pending['version'], wp_get_theme( $slug )->get( 'Version' ), '>' ) ) {
+	if ( $pending && ! $older && ! version_compare( $pending['version'], wp_get_theme( $slug )->get( 'Version' ), '>' ) ) {
 		delete_option( 'vsg_update_pending' );
 	}
 	delete_transient( 'vsg_au_lock' );
 	vsg_journal( $source, $msg );
 	return $msg;
+}
+
+/** Première version réinstallable depuis la page : les précédentes n'ont pas cette page ni le mode « après accord ». */
+const VSG_AU_OLDEST = '0.9.40';
+
+/** Une version peut-elle être réinstallée depuis la page ? */
+function vsg_au_old_allowed( $version ) {
+	return (bool) $version && version_compare( $version, apply_filters( 'vsg_au_oldest', VSG_AU_OLDEST ), '>=' );
+}
+
+/**
+ * Dernières versions publiées sur GitHub, lues dans le flux public des commits de main
+ * (pas d'API, donc pas de limite horaire) : version, commit, date, résumé. 15 minutes en cache.
+ *
+ * @return array{list:array<int,array>,error:string}
+ */
+function vsg_au_versions() {
+	$cached = get_site_transient( 'vsg_au_versions' );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+	$out = array(
+		'list'  => array(),
+		'error' => '',
+	);
+	$r   = wp_remote_get( 'https://github.com/' . VSG_GITHUB_REPO . '/commits/main.atom', array( 'timeout' => 10 ) );
+	if ( is_wp_error( $r ) || 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+		$out['error'] = 'liste des versions injoignable sur GitHub' . ( is_wp_error( $r ) ? ' (' . $r->get_error_message() . ')' : ' (réponse ' . wp_remote_retrieve_response_code( $r ) . ')' );
+		set_site_transient( 'vsg_au_versions', $out, 5 * MINUTE_IN_SECONDS );
+		return $out;
+	}
+	preg_match_all( '#<entry>(.*?)</entry>#s', (string) wp_remote_retrieve_body( $r ), $entries );
+	$seen = array();
+	foreach ( $entries[1] as $e ) {
+		if ( ! preg_match( '#Commit/([0-9a-f]{40})</id>#', $e, $sha ) || ! preg_match( '#<title>(.*?)</title>#s', $e, $title ) ) {
+			continue;
+		}
+		$title = html_entity_decode( trim( $title[1] ), ENT_QUOTES | ENT_XML1, 'UTF-8' );
+		if ( ! preg_match( '/^(?:Version\s+)?(\d+\.\d+\.\d+)\b/u', $title, $v ) || isset( $seen[ $v[1] ] ) ) {
+			continue;
+		}
+		$seen[ $v[1] ] = true;
+		preg_match( '#<updated>(.*?)</updated>#', $e, $date );
+		$out['list'][] = array(
+			'version' => $v[1],
+			'sha'     => $sha[1],
+			'date'    => isset( $date[1] ) ? strtotime( $date[1] ) : 0,
+			'title'   => trim( preg_replace( '/^(?:Version\s+)?\d+\.\d+\.\d+\s*:?\s*/u', '', $title ) ),
+		);
+	}
+	set_site_transient( 'vsg_au_versions', $out, 15 * MINUTE_IN_SECONDS );
+	return $out;
 }
 
 /**
@@ -446,6 +511,11 @@ function vsg_au_admin_page() {
 	if ( isset( $_POST['vsg_au_rollback'] ) && check_admin_referer( 'vsg_au' ) ) {
 		$notice = vsg_au_rollback();
 	}
+	if ( isset( $_POST['vsg_au_old'] ) && check_admin_referer( 'vsg_au' ) ) {
+		$sha    = sanitize_key( wp_unslash( $_POST['vsg_au_old'] ) );
+		$known  = wp_list_pluck( vsg_au_versions()['list'], 'sha' );
+		$notice = in_array( $sha, $known, true ) ? vsg_au_run( 'ancienne', $sha ) : 'Cette version n\'est plus dans la liste : rechargez la page.';
+	}
 	if ( isset( $_POST['vsg_au_install'] ) && check_admin_referer( 'vsg_au' ) ) {
 		$p      = vsg_au_pending();
 		$notice = $p && hash_equals( $p['sha'], sanitize_key( wp_unslash( $_POST['vsg_au_install'] ) ) ) ? vsg_au_run( 'accord', $p['sha'] ) : 'Cette version n\'est plus en attente.';
@@ -514,10 +584,53 @@ function vsg_au_admin_page() {
 		<?php $prev = vsg_au_previous(); ?>
 		<?php if ( $prev ) : ?>
 			<h2>Revenir à la version précédente</h2>
-			<p>La <?php echo esc_html( $prev['installed'] ); ?> a été installée le <?php echo esc_html( wp_date( 'j/m/Y à H:i', (int) $prev['date'] ) ); ?>. En cas de problème, vous pouvez remettre la <?php echo esc_html( $prev['version'] ); ?> telle qu'elle était juste avant. La <?php echo esc_html( $prev['installed'] ); ?> ne sera alors plus proposée ; une version corrigée le sera.</p>
+			<p>La <?php echo esc_html( $prev['installed'] ); ?> a été installée le <?php echo esc_html( wp_date( 'j/m/Y à H:i', (int) $prev['date'] ) ); ?>. En cas de problème, vous pouvez remettre la <?php echo esc_html( $prev['version'] ); ?> telle qu'elle était juste avant.<?php echo version_compare( $prev['version'], $prev['installed'], '<' ) ? ' La ' . esc_html( $prev['installed'] ) . ' ne sera alors plus proposée ; une version corrigée le sera.' : ''; ?></p>
 			<form method="post">
 				<?php wp_nonce_field( 'vsg_au' ); ?>
 				<p><button class="button" name="vsg_au_rollback" value="1" onclick="return confirm('Revenir à la <?php echo esc_js( $prev['version'] ); ?> ?');">Revenir à la <?php echo esc_html( $prev['version'] ); ?></button></p>
+			</form>
+		<?php endif; ?>
+
+		<?php
+		$versions = vsg_au_versions();
+		$older    = array_values(
+			array_filter(
+				$versions['list'],
+				function ( $v ) {
+					return vsg_au_old_allowed( $v['version'] );
+				}
+			)
+		);
+		?>
+		<h2>Installer une version antérieure</h2>
+		<p>Pour revenir à une version précise publiée sur GitHub. Même sécurité qu'une mise à jour : copie de la version en place, contrôle du site, remise en place automatique en cas de panne, inscription au journal. La version la plus récente vous sera ensuite de nouveau proposée : refusez-la si vous voulez rester sur l'ancienne.</p>
+		<?php if ( 'auto' === $mode ) : ?><p class="description"><strong>Mode automatique :</strong> la version la plus récente serait réinstallée dans l'heure. Passez d'abord en mode « Après mon accord » (plus bas) pour rester sur une version antérieure.</p><?php endif; ?>
+		<?php if ( $versions['error'] ) : ?>
+			<p class="description">Liste indisponible pour le moment : <?php echo esc_html( $versions['error'] ); ?>.</p>
+		<?php elseif ( ! $older ) : ?>
+			<p class="description">Aucune version réinstallable pour l'instant (à partir de la <?php echo esc_html( VSG_AU_OLDEST ); ?>).</p>
+		<?php else : ?>
+			<form method="post">
+				<?php wp_nonce_field( 'vsg_au' ); ?>
+				<table class="widefat striped vsg-versions">
+					<thead><tr><th scope="col">Version</th><th scope="col">Publiée le</th><th scope="col">Contenu</th><th scope="col"><span class="screen-reader-text">Action</span></th></tr></thead>
+					<tbody>
+					<?php foreach ( $older as $v ) : ?>
+						<tr>
+							<td><strong><?php echo esc_html( $v['version'] ); ?></strong><br><a href="<?php echo esc_url( vsg_au_commit_url( $v['sha'] ) ); ?>" target="_blank" rel="noopener"><code><?php echo esc_html( substr( $v['sha'], 0, 7 ) ); ?></code><span class="screen-reader-text"> (nouvel onglet)</span></a></td>
+							<td><?php echo $v['date'] ? esc_html( wp_date( 'j/m/Y à H:i', $v['date'] ) ) : ''; ?></td>
+							<td><?php echo esc_html( $v['title'] ); ?></td>
+							<td>
+							<?php if ( $v['version'] === $local ) : ?>
+								<strong>Installée</strong>
+							<?php else : ?>
+								<button class="button" name="vsg_au_old" value="<?php echo esc_attr( $v['sha'] ); ?>" onclick="return confirm('Installer la <?php echo esc_js( $v['version'] ); ?> à la place de la <?php echo esc_js( $local ); ?> ?');">Installer la <?php echo esc_html( $v['version'] ); ?></button>
+							<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
 			</form>
 		<?php endif; ?>
 

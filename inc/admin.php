@@ -195,6 +195,7 @@ add_action(
 		if ( vsg_common_term() ) {
 			echo '<option value="commun"' . selected( $cur, 'commun', false ) . '>Les deux paroisses</option>';
 		}
+		echo '<option value="sans"' . selected( $cur, 'sans', false ) . '>Sans paroisse</option>';
 		echo '</select>';
 	}
 );
@@ -208,7 +209,27 @@ add_action(
 		if ( ! in_array( $q->get( 'post_type' ) ? $q->get( 'post_type' ) : 'post', vsg_admin_list_types(), true ) ) {
 			return;
 		}
-		$val  = sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ); // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre de la liste des rendez-vous.
+		$val = sanitize_key( wp_unslash( $_GET['vsg_paroisse'] ) ); // phpcs:ignore WordPress.Security.NonceVerification -- simple filtre de la liste des rendez-vous.
+		if ( 'sans' === $val ) {
+			/* Les mêmes que ceux marqués « Aucune paroisse choisie » dans la liste. */
+			$ids = get_posts(
+				array(
+					'post_type'      => $q->get( 'post_type' ) ? $q->get( 'post_type' ) : 'post',
+					'post_status'    => 'any',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+				)
+			);
+			$ids = array_filter(
+				$ids,
+				function ( $id ) {
+					return ! vsg_context_parish( $id ) && ! vsg_place_label( $id );
+				}
+			);
+			$q->set( 'post__in', $ids ? array_values( $ids ) : array( 0 ) );
+			return;
+		}
 		$term = 'commun' === $val ? vsg_common_term() : vsg_page_term( (int) $val );
 		if ( ! $term ) {
 			return;
